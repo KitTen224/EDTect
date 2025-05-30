@@ -1,0 +1,5 @@
+$colors: fuchsia, red, blue, orange;
+
+.testCase {
+    background-color: nth($colors, 4);
+}
