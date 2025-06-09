@@ -30,5 +30,13 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'hotpepper' => [
+        'key' => env('HOTPEPPER_API_KEY'),
+    ],
+    'rapidapi' => [
+        'key' => env('RAPIDAPI_KEY'),
+    ],
+    'geoapify' => [
+        'key' => env('GEOAPIFY_API_KEY'),
+    ],
 ];
