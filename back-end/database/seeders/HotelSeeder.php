@@ -62,6 +62,8 @@ class HotelSeeder extends Seeder
                     'is_featured' => false,
                     'created_at' => now(),
                     'updated_at' => now(),
+                    'source' => 'geoapify',
+                    'tags' => json_encode($props['categories'] ?? []),
                 ]);
             }
 

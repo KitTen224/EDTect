@@ -71,6 +71,7 @@ class TourisSeeder extends Seeder
                     'is_featured' => false,
                     'created_at' => now(),
                     'updated_at' => now(),
+                    'tags' => json_encode($props['categories'] ?? []),
                 ]);
             }
 

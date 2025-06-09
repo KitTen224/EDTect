@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             PlacesSeeder::class,
             HotelSeeder::class,
             TourisSeeder::class,
+            PlaceCategorySeeder::class,
         ]);
 
     }

@@ -62,6 +62,8 @@ class PlacesSeeder extends Seeder
                         'is_featured' => false,
                         'created_at' => now(),
                         'updated_at' => now(),
+                        'source' => 'hotpepper',
+                        'genre_name' => $shop['genre']['name'] ?? '',
                     ];
                     $currentCount++;
 
