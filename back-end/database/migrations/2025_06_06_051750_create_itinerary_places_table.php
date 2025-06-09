@@ -20,6 +20,7 @@ return new class extends Migration
             $table->time('end_time')->nullable();
             $table->text('notes')->nullable();
             $table->integer('order')->default(0);
+            $table->timestamps();
         });
     }
 

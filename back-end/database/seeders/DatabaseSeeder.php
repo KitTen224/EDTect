@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\Booking;
+use App\Models\Favorite;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -24,6 +27,13 @@ class DatabaseSeeder extends Seeder
             HotelSeeder::class,
             TourisSeeder::class,
             PlaceCategorySeeder::class,
+            ReviewsSeeder::class,
+            BookingsSeeder::class,
+            BookingDetailsSeeder::class,
+            ItinerariesSeeder::class,
+            ItineraryPlacesSeeder::class,
+            FavoritesSeeder::class,
+            // EventSeeder::class, //error
         ]);
 
     }

@@ -39,4 +39,7 @@ return [
     'geoapify' => [
         'key' => env('GEOAPIFY_API_KEY'),
     ],
+    'eventbrite' => [
+        'token' => env('EVENTBRITE_TOKEN'),
+    ],
 ];
