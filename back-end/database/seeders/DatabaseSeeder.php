@@ -34,6 +34,9 @@ class DatabaseSeeder extends Seeder
             ItineraryPlacesSeeder::class,
             FavoritesSeeder::class,
             // EventSeeder::class, //error
+            AiInteractionLogsSeeder::class,
+            AiSuggestionsSeeder::class,
+            AiUserProfilesSeeder::class,
         ]);
 
     }

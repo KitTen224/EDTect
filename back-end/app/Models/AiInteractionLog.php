@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class AiInteractionLog extends Model
 {
     use HasFactory;
-
+    public $timestamps = false;
     protected $fillable = [
         'user_id',
         'place_id',
         'itinerary_id',
-        'action',
-        'timestamp'
+        'action_type',
+        'timestamp',
+        'metadata',
     ];
 
     protected $casts = [
