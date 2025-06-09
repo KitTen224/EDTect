@@ -10,12 +10,29 @@ class AiUserProfilesSeeder extends Seeder
 {
     public function run()
     {
-        $travelStyles = ['adventure', 'relaxation', 'cultural', 'romantic', 'family'];
-        $transportModes = ['train', 'bus', 'walk', 'bike', 'car'];
+        //$travelStyles = ['adventure', 'relaxation', 'cultural', 'romantic', 'family'];
+        $travelStyles = ['冒険', 'リラクゼーション', '文化', 'ロマンチック', '家族'];
+        //$transportModes = ['train', 'bus', 'walk', 'bike', 'car'];
+        $transportModes = ['電車', 'バス', '徒歩', '自転車', '車'];
         $budgets = ['low', 'medium', 'high'];
+        //$budgets = ['低予算', '中予算', '高予算'];
+
+        // $interestTags = [
+        //     'sushi', 'ramen', 'onsen', 'castle', 'museum', 'park',
+        //     'cafe', 'barbecue', 'nature', 'temple', 'shopping'
+        // ];
         $interestTags = [
-            'sushi', 'ramen', 'onsen', 'castle', 'museum', 'park',
-            'cafe', 'barbecue', 'nature', 'temple', 'shopping'
+            '寿司',     // sushi
+            'ラーメン', // ramen
+            '温泉',     // onsen
+            '城',       // castle
+            '博物館',   // museum
+            '公園',     // park
+            'カフェ',   // cafe
+            '焼肉',     // barbecue
+            '自然',     // nature
+            '寺',       // temple
+            'ショッピング' // shopping
         ];
 
         $users = User::all();
