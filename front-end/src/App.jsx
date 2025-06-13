@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import Sample from "./page/sample";
+import SuggestionTest from './page/suggestionTest';
 
 export default function App() {
   return(
     <Routes>
-      <Route path="/sample" element={<Sample/>}/>
+      <Route path="/test" element={<SuggestionTest/>}/>
     </Routes>
   )
 }

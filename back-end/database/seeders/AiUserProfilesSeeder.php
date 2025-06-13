@@ -24,15 +24,20 @@ class AiUserProfilesSeeder extends Seeder
         $interestTags = [
             '寿司',     // sushi
             'ラーメン', // ramen
-            '温泉',     // onsen
-            '城',       // castle
-            '博物館',   // museum
-            '公園',     // park
+            '居酒屋',
+            'イタリアン',
+            'フレンチ',
             'カフェ',   // cafe
             '焼肉',     // barbecue
-            '自然',     // nature
-            '寺',       // temple
-            'ショッピング' // shopping
+            'Accommodation ',
+            'Accommodation.hotel',
+            'Building',
+            'Building.accommodation',
+            'Internet access',
+            'Leisure',
+            'Leisure.spa',
+            'Leisure.spa.public bath',
+            'Building.commercial',
         ];
 
         $users = User::all();
