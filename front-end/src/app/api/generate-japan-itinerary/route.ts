@@ -79,6 +79,17 @@ Return this exact JSON structure:
           "icon": "🍣",
           "location": "Tsukiji",
           "description": "Fresh sushi at famous Tsukiji Outer Market. Try tuna, sea urchin, and seasonal fish. Authentic Tokyo breakfast experience."
+        },
+        {
+          "id": "day1-activity3",
+          "title": "Hotel Gracery Shinjuku",
+          "time": "22:00",
+          "duration": 480,
+          "cost": 15000,
+          "type": "accommodation",
+          "icon": "🏨",
+          "location": "Shinjuku",
+          "description": "Modern hotel with Godzilla theme, excellent location in Shinjuku. Free WiFi, English-speaking staff, great city views. Perfect base for exploring Tokyo."
         }
       ]
     }
@@ -87,11 +98,14 @@ Return this exact JSON structure:
 
 Rules:
 - ${totalDuration} days total
-- 6-8 activities per day 
+- 7-9 activities per day (including accommodation) 
 - Use these EXACT time slots: 06:00, 07:00, 08:00, 09:00, 10:00, 11:00, 12:00, 13:00, 14:00, 15:00, 16:00, 17:00, 18:00, 19:00, 20:00, 21:00, 22:00, 23:00
-- Types: attraction, meal, experience
+- Types: attraction, meal, experience, accommodation
 - Include breakfast (07:00-09:00), lunch (12:00-14:00), dinner (19:00-21:00)
-- NO admin tasks (tickets, hotel check-in)
+- Include hotel/accommodation (22:00-06:00) for each day with check-in time
+- Hotels should be well-located, authentic Japanese or international options
+- Include hotel amenities, location benefits, and cultural context
+- NO admin tasks (tickets, booking confirmations)
 - Rich descriptions with cultural context
 
 RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
@@ -114,7 +128,7 @@ RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
     console.log('🤖 Calling Gemini API...');
     
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
       console.log('📝 Prompt length:', prompt.length, 'characters');
       
       const result = await model.generateContent(prompt);
