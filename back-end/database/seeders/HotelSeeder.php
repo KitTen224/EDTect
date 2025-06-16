@@ -63,6 +63,8 @@ class HotelSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                     'source' => 'geoapify',
+                    'source_type'=> 'admin',
+                    'is_ai_generated' => false,
                     'tags' => json_encode($props['categories'] ?? []),
                 ]);
             }

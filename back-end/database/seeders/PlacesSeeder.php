@@ -22,7 +22,7 @@ class PlacesSeeder extends Seeder
     // }
     public function run(): void
     {
-        $maxRecords = 200; // Giới hạn an toàn
+        $maxRecords = 10; // Giới hạn an toàn
         $currentCount = 0;
         $apiKey = env('HOTPEPPER_API_KEY'); // Đặt trong .env
         $areas = ['Z011', 'Z012', 'Z013', 'Z014', 'Z015', 'Z016']; // Vùng toàn quốc Nhật Bản (ví dụ vài vùng chính)
@@ -63,6 +63,8 @@ class PlacesSeeder extends Seeder
                         'created_at' => now(),
                         'updated_at' => now(),
                         'source' => 'hotpepper',
+                        'source_type'=> 'admin',
+                        'is_ai_generated' => false,
                         'genre_name' => $shop['genre']['name'] ?? '',
                     ];
                     $currentCount++;

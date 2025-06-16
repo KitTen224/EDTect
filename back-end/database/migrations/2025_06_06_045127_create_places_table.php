@@ -25,6 +25,8 @@ return new class extends Migration
             $table->json('opening_hours')->nullable();
             $table->float('average_rating')->default(0);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_ai_generated')->default(false);
+            $table->enum('source_type', ['ai', 'business','admin'])->default('admin');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();

@@ -8,3 +8,13 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\Sites\Team2\laravel\ExploreEats\artisan on line 18
+[16-Jun-2025 14:38:41 Asia/Tokyo] PHP Warning:  require(C:\Sites\Team2\EDTect\back-end/vendor/autoload.php): Failed to open stream: No such file or directory in C:\Sites\Team2\EDTect\back-end\artisan on line 18
+[16-Jun-2025 14:38:41 Asia/Tokyo] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\Sites\Team2\EDTect\back-end/vendor/autoload.php' (include_path='.;C:\php\pear') in C:\Sites\Team2\EDTect\back-end\artisan:18
+Stack trace:
+#0 {main}
+  thrown in C:\Sites\Team2\EDTect\back-end\artisan on line 18
+[16-Jun-2025 14:39:50 Asia/Tokyo] PHP Warning:  require(C:\Sites\Team2\EDTect\back-end/vendor/autoload.php): Failed to open stream: No such file or directory in C:\Sites\Team2\EDTect\back-end\artisan on line 18
+[16-Jun-2025 14:39:50 Asia/Tokyo] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\Sites\Team2\EDTect\back-end/vendor/autoload.php' (include_path='.;C:\php\pear') in C:\Sites\Team2\EDTect\back-end\artisan:18
+Stack trace:
+#0 {main}
+  thrown in C:\Sites\Team2\EDTect\back-end\artisan on line 18
