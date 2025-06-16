@@ -1,0 +1,7 @@
+{
+  "name": "manual-start",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node node_modules/next/dist/bin/next dev"
+  }
+}

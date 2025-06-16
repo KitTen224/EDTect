@@ -1,0 +1,7 @@
+{
+  "name": "temp-package",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "cd front-end && npm run dev"
+  }
+}

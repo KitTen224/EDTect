@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Chat AI animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
 :root {
     --background: #ffffff;
     --foreground: #171717;

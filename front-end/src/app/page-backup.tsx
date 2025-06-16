@@ -5,7 +5,6 @@ import TimelineView from '@/components/TimelineView';
 import { Header } from '@/components/ui/Header';
 import { SaveTripButton } from '@/components/ui/SaveTripButton';
 import ChatAI from '@/components/ChatAI';
-import SimpleChat from '@/components/SimpleChat';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
 
 export default function Home() {
@@ -16,7 +15,6 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [showRawOutput, setShowRawOutput] = useState(false);
     const [lastPrompt, setLastPrompt] = useState<string | null>(null);
-    const [showChat, setShowChat] = useState(false);
 
     const handlePlanUpdateFromAI = (newPlan: any) => {
         // Update timeline with new plan from AI
@@ -139,58 +137,14 @@ export default function Home() {
         } finally {
             setIsLoading(false);
         }
-    };    if (!tripData) {
+    };
+
+    if (!tripData) {
         return (
-            <div>
-                <JapanTravelForm
-                    onSubmit={handleJapanTravelFormSubmit}
-                    isLoading={isLoading}
-                />
-                
-                {/* Chat AI Button for Form Page */}
-                <div
-                    style={{
-                        position: 'fixed',
-                        bottom: '30px',
-                        right: '30px',
-                        zIndex: 999999,
-                        backgroundColor: '#dc2626',
-                        color: 'white',
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '40px',
-                        cursor: 'pointer',
-                        border: '4px solid white',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.5)',
-                        transition: 'all 0.3s ease'
-                    }}                    onClick={() => {
-                        setShowChat(true);
-                        console.log('🤖 Chat AI button clicked on form page!');
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                        e.currentTarget.style.backgroundColor = '#b91c1c';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.backgroundColor = '#dc2626';
-                    }}
-                    title="AIチャットを開く"                >
-                    💬
-                </div>
-                
-                {/* Chat Interface for Form Page */}
-                {showChat && (
-                    <SimpleChat 
-                        currentPlan={null}
-                        onClose={() => setShowChat(false)}
-                    />
-                )}
-            </div>
+            <JapanTravelForm
+                onSubmit={handleJapanTravelFormSubmit}
+                isLoading={isLoading}
+            />
         );
     }
 
@@ -447,21 +401,15 @@ export default function Home() {
                     cursor: 'pointer',
                     border: '4px solid white',
                     boxShadow: '0 8px 25px rgba(0,0,0,0.5)'
-                }}                onClick={() => {
-                    setShowChat(true);
+                }}
+                onClick={() => {
+                    alert('🤖 Chat AI sẽ mở ở đây!\n\nHiện tại đang test nút có hiển thị được không.');
                     console.log('🤖 Chat AI button clicked!');
                 }}
-                title="AIチャットを開く"            >
+                title="AIチャットを開く"
+            >
                 💬
             </div>
-            
-            {/* Chat Interface */}
-            {showChat && (
-                <SimpleChat 
-                    currentPlan={timeline}
-                    onClose={() => setShowChat(false)}
-                />
-            )}
         </div>
     );
 }

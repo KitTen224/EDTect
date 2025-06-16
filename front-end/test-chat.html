@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat AI Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999999;
+        }
+        
+        .test-button {
+            background: #ff0000;
+            color: white;
+            padding: 15px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999999;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            font-size: 35px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 4px solid white;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-button:hover {
+            background: #b91c1c;
+            transform: scale(1.1);
+        }
+        
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .status {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-buttons">
+        <button class="test-button" onclick="testButton1()">TEST 1</button>
+        <button class="test-button" onclick="testButton2()">TEST 2</button>
+    </div>
+    
+    <button class="chat-button" onclick="openChat()" title="AIチャットを開く">
+        💬
+    </button>
+    
+    <div class="content">
+        <h1>🎌 Chat AI Test Page</h1>
+        <div class="status">
+            <h2>テスト状況</h2>
+            <p>この画面で以下のボタンが見えますか？</p>
+            <ul style="text-align: left;">
+                <li>右上に「TEST 1」と「TEST 2」ボタン</li>
+                <li>右下に💬チャットボタン</li>
+            </ul>
+        </div>
+        
+        <div class="status">
+            <h2>Next.js アプリの状態</h2>
+            <p id="nextjs-status">Next.jsアプリが動作していない可能性があります</p>
+            <button onclick="checkNextJS()" style="background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                Next.js アプリをチェック
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function testButton1() {
+            alert('TEST 1 ボタンが動作しています！');
+            console.log('🧪 Test button 1 clicked');
+        }
+        
+        function testButton2() {
+            alert('TEST 2 ボタンが動作しています！');
+            console.log('🧪 Test button 2 clicked');
+        }
+        
+        function openChat() {
+            alert('💬 チャットボタンが動作しています！\n\nNext.jsアプリが動作していれば、このボタンでチャットが開きます。');
+            console.log('🤖 Chat button clicked');
+        }
+        
+        async function checkNextJS() {
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    document.getElementById('nextjs-status').innerHTML = '✅ Next.jsアプリが動作中です！<br><a href="http://localhost:3000" style="color: #60a5fa;">localhost:3000で確認</a>';
+                } else {
+                    document.getElementById('nextjs-status').innerHTML = '❌ Next.jsアプリにアクセスできません';
+                }
+            } catch (error) {
+                document.getElementById('nextjs-status').innerHTML = '❌ Next.jsアプリが起動していません<br>エラー: ' + error.message;
+            }
+        }
+        
+        // Auto-check on page load
+        window.onload = function() {
+            setTimeout(checkNextJS, 1000);
+        };
+    </script>
+</body>
+</html>
