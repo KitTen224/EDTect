@@ -21,6 +21,7 @@ class ItinerariesSeeder extends Seeder
                 'description' => 'Plan for visiting exciting places alone.',
                 'start_date' => now()->addDays(3)->format('Y-m-d'),
                 'end_date' => now()->addDays(5)->format('Y-m-d'),
+                'source' => 'ai',
             ]);
         }
     }

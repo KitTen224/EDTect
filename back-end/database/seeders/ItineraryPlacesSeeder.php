@@ -24,7 +24,8 @@ class ItineraryPlacesSeeder extends Seeder
                 'start_time' => '09:00:00',
                 'end_time' => '12:00:00',
                 'notes' => 'Morning visit',
-                'order' => 1
+                'order' => 1,
+                'is_ai_suggested' => true,
             ]);
         }
     }
