@@ -34,8 +34,11 @@ class AiInteractionLogsSeeder extends Seeder
                     'place_id' => $place->id,
                     'itinerary_id' => rand(0, 1) ? $itinerary->id : null,
                     'action_type' => $actionType,
+                    'prompt_text' => 'Create 5-day spring itinerary for Tokyo and Kyoto.',
+                    'response_text' => 'Generated itinerary with temple visits and food experiences.',
+                    'model_used' => 'gemini-1.5-flash',
+                    'metadata' => json_encode(['regions' => ['Tokyo', 'Kyoto'], 'season' => 'Spring']),
                     'timestamp' => now()->subDays(rand(0, 30))->addMinutes(rand(0, 1440)),
-                    'metadata' => json_encode($actions[$actionType]()),
                 ]);
             }
         }

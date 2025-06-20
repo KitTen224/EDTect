@@ -62,8 +62,20 @@ export default function AdminLogin() {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+    return (        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+            {/* Back to main button */}
+            <div className="absolute top-6 left-6">
+                <motion.button
+                    onClick={() => router.push('/')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-blue-600 border border-gray-200 hover:border-blue-300"
+                >
+                    <span>🏠</span>
+                    <span className="font-medium">メイン画面に戻る</span>
+                </motion.button>
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -131,9 +143,7 @@ export default function AdminLogin() {
                     >
                         {isLoading ? 'ログイン中...' : 'ログイン'}
                     </motion.button>
-                </form>
-
-                {/* Footer */}
+                </form>                {/* Footer */}
                 <div className="mt-8 text-center">
                     <p className="text-sm text-gray-500">
                         © 2025 日本 Journey 管理システム

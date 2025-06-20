@@ -63,8 +63,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
+        <div className="min-h-screen bg-gray-50">            {/* Header */}
             <header className="bg-white shadow-sm border-b">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
@@ -74,18 +73,26 @@ export default function AdminDashboard() {
                             </h1>
                             <p className="text-sm text-gray-600">日本 Journey 管理システム</p>
                         </div>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                        >
-                            ログアウト
-                        </button>
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={() => router.push('/')}
+                                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors border border-gray-300 rounded-lg hover:border-blue-300"
+                            >
+                                <span>🏠</span>
+                                <span>メイン画面に戻る</span>
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
+                            >
+                                ログアウト
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <div className="flex">
-                {/* Sidebar */}
+            <div className="flex">                {/* Sidebar */}
                 <nav className="w-64 bg-white shadow-sm h-screen sticky top-0">
                     <div className="p-6">
                         <div className="space-y-2">
@@ -104,6 +111,20 @@ export default function AdminDashboard() {
                                     <span className="font-medium">{tab.label}</span>
                                 </motion.button>
                             ))}
+                            
+                            {/* Separator */}
+                            <div className="border-t border-gray-200 my-4"></div>
+                            
+                            {/* Back to Main Button */}
+                            <motion.button
+                                onClick={() => router.push('/')}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-all text-blue-600 hover:bg-blue-50 border border-blue-200"
+                            >
+                                <span className="text-lg mr-3">🏠</span>
+                                <span className="font-medium">メイン画面</span>
+                            </motion.button>
                         </div>
                     </div>
                 </nav>
