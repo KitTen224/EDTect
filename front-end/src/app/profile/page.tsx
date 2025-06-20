@@ -69,19 +69,29 @@ export default function ProfilePage() {
     }, [status, session, router]);
 
     const loadUserProfile = async () => {
-        // TODO: Implement API call to load user profile preferences
-        // For now, we'll use default values
         setIsLoading(true);
         try {
-            // Simulated API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await fetch('/api/user/profile');
+            if (!response.ok) {
+                throw new Error('Failed to load profile');
+            }
             
-            // Set some example preferences
-            setPreferredRegions(['kanto', 'kansai']);
-            setPreferredStyles(['traditional', 'foodie']);
-            setPreferredSeasons(['spring', 'autumn']);
+            const profile = await response.json();
+            console.log('Loaded profile:', profile);
+            
+            // Update form fields with loaded data
+            setName(profile.name || '');
+            setEmail(profile.email || '');
+            setLanguage(profile.language || 'en');
+            setExperienceLevel(profile.experience_level || 'beginner');
+            setBudgetPreference(profile.budget_preference || 'moderate');
+            setNotificationsEnabled(profile.notifications_enabled ?? true);
+            setPreferredRegions(profile.preferred_regions || []);
+            setPreferredStyles(profile.preferred_styles || []);
+            setPreferredSeasons(profile.preferred_seasons || []);
         } catch (error) {
             console.error('Error loading profile:', error);
+            // Keep default values on error
         } finally {
             setIsLoading(false);
         }
@@ -90,14 +100,39 @@ export default function ProfilePage() {
     const saveProfile = async () => {
         setIsSaving(true);
         try {
-            // TODO: Implement API call to save user profile
-            // Simulated API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
+            const profileData = {
+                name,
+                language,
+                experienceLevel,
+                budgetPreference,
+                notificationsEnabled,
+                preferredRegions,
+                preferredStyles,
+                preferredSeasons
+            };
+
+            console.log('Saving profile:', profileData);
+
+            const response = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profileData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to save profile');
+            }
+
+            const savedProfile = await response.json();
+            console.log('Profile saved successfully:', savedProfile);
             alert('Profile saved successfully!');
         } catch (error) {
             console.error('Error saving profile:', error);
-            alert('Failed to save profile. Please try again.');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save profile. Please try again.';
+            alert(errorMessage);
         } finally {
             setIsSaving(false);
         }

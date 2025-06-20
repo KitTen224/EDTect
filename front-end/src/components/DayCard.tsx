@@ -12,6 +12,7 @@ interface DayCardProps {
     onMoveActivity: (activityId: string, fromDayIndex: number, toDayIndex: number, newTimeSlot?: string) => void;
     onUpdateActivity: (dayIndex: number, activityId: string, updates: Partial<TimelineActivity>) => void;
     onShowActivityDetails?: (activity: TimelineActivity) => void;
+    readOnly?: boolean;
 }
 
 // Extracted TimeSlotDropZone component to prevent re-creation on renders

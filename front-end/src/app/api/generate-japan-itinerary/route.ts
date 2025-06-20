@@ -6,45 +6,45 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('🔍 Japan itinerary API called');
-    const body = await request.json();
-    console.log('📝 Request body:', JSON.stringify(body, null, 2));
-    
-    const { regions, totalDuration, travelStyles, season } = body;
+    try {
+        console.log('🔍 Japan itinerary API called');
+        const body = await request.json();
+        console.log('📝 Request body:', JSON.stringify(body, null, 2));
 
-    if (!regions || !Array.isArray(regions) || regions.length === 0 || !totalDuration) {
-      console.log('❌ Missing required fields');
-      return NextResponse.json(
-        { error: 'Missing required fields: regions and totalDuration' },
-        { status: 400 }
-      );
-    }
+        const { regions, totalDuration, travelStyles, season } = body;
 
-    console.log('✅ Request validation passed');
+        if (!regions || !Array.isArray(regions) || regions.length === 0 || !totalDuration) {
+            console.log('❌ Missing required fields');
+            return NextResponse.json(
+                { error: 'Missing required fields: regions and totalDuration' },
+                { status: 400 }
+            );
+        }
 
-    // Build Japan-specific context for multiple regions
-    const regionsContext = regions.map((regionWithDays: { region: { name: string; nameJapanese: string; description: string; prefecture?: string[] }; days: number }) => `
+        console.log('✅ Request validation passed');
+
+        // Build Japan-specific context for multiple regions
+        const regionsContext = regions.map((regionWithDays: { region: { name: string; nameJapanese: string; description: string; prefecture?: string[] }; days: number }) => `
 REGION: ${regionWithDays.region.name} (${regionWithDays.region.nameJapanese})
 Duration: ${regionWithDays.days} day${regionWithDays.days !== 1 ? 's' : ''}
 Description: ${regionWithDays.region.description}
 Major Prefectures: ${regionWithDays.region.prefecture?.join(', ') || 'Not specified'}
 `).join('\n');
 
-    const styleContext = travelStyles && travelStyles.length > 0 ? `
+        const styleContext = travelStyles && travelStyles.length > 0 ? `
 TRAVEL STYLES: ${travelStyles.map((style: any) => `${style.name} (${style.nameJapanese})`).join(', ')}
 Style Focus: ${travelStyles.map((style: any) => style.description).join(', ')}
 ` : '';
 
-    const seasonContext = season ? `
+        const seasonContext = season ? `
 SEASON: ${season.name} (${season.nameJapanese})
 Season Description: ${season.description}
 Seasonal Highlights: ${season.highlights.join(', ')}
 ` : '';
 
-    const regionNames = regions.map((rwd: { region: { name: string } }) => rwd.region.name).join(' and ');
-    
-    const prompt = `You are a JSON API. Return ONLY valid JSON, no other text.
+        const regionNames = regions.map((rwd: { region: { name: string } }) => rwd.region.name).join(' and ');
+
+        const prompt = `You are a JSON API. Return ONLY valid JSON, no other text.
 
 Create ${totalDuration}-day Japan itinerary for: ${regionNames}
 
@@ -67,7 +67,8 @@ Return this exact JSON structure:
           "type": "attraction",
           "icon": "⛩️",
           "location": "Asakusa",
-          "description": "Visit Tokyo's oldest temple (645 AD). Explore Nakamise-dori shopping street, see the giant red lantern, try fortune telling. Best visited early to avoid crowds."
+          "description": "Visit Tokyo's oldest temple (645 AD). Explore Nakamise-dori shopping street, see the giant red lantern, try fortune telling. Best visited early to avoid crowds.",
+          "photoSearchTerms": "Senso-ji Temple Asakusa Tokyo red lantern gate"
         },
         {
           "id": "day1-activity2", 
@@ -78,7 +79,8 @@ Return this exact JSON structure:
           "type": "meal",
           "icon": "🍣",
           "location": "Tsukiji",
-          "description": "Fresh sushi at famous Tsukiji Outer Market. Try tuna, sea urchin, and seasonal fish. Authentic Tokyo breakfast experience."
+          "description": "Fresh sushi at famous Tsukiji Outer Market. Try tuna, sea urchin, and seasonal fish. Authentic Tokyo breakfast experience.",
+          "photoSearchTerms": "Tsukiji fish market sushi fresh tuna Tokyo"
         },
         {
           "id": "day1-activity3",
@@ -89,7 +91,8 @@ Return this exact JSON structure:
           "type": "accommodation",
           "icon": "🏨",
           "location": "Shinjuku",
-          "description": "Modern hotel with Godzilla theme, excellent location in Shinjuku. Free WiFi, English-speaking staff, great city views. Perfect base for exploring Tokyo."
+          "description": "Modern hotel with Godzilla theme, excellent location in Shinjuku. Free WiFi, English-speaking staff, great city views. Perfect base for exploring Tokyo.",
+          "photoSearchTerms": "Hotel Gracery Shinjuku Godzilla Tokyo modern hotel"
         }
       ]
     }
@@ -105,64 +108,66 @@ Rules:
 - Include hotel/accommodation (22:00-06:00) for each day with check-in time
 - Hotels should be well-located, authentic Japanese or international options
 - Include hotel amenities, location benefits, and cultural context
+- MUST include "photoSearchTerms" for each activity with specific, searchable keywords for finding relevant photos
+- Photo search terms should include: venue name, location, distinctive features (e.g., "red lantern", "Godzilla theme")
 - NO admin tasks (tickets, booking confirmations)
 - Rich descriptions with cultural context
 
 RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
 
-    // Check if Gemini API key is available
-    if (!process.env.GEMINI_API_KEY) {
-      console.log('⚠️ GEMINI_API_KEY not found in environment variables');
-      return NextResponse.json(
-        { 
-          error: 'AI service configuration error. Gemini API key is not configured.',
-          details: 'Please ensure GEMINI_API_KEY is set in environment variables'
-        },
-        { status: 500 }
-      );
-    } else {
-      console.log('✅ GEMINI_API_KEY found, length:', process.env.GEMINI_API_KEY.length);
-    }
+        // Check if Gemini API key is available
+        if (!process.env.GEMINI_API_KEY) {
+            console.log('⚠️ GEMINI_API_KEY not found in environment variables');
+            return NextResponse.json(
+                {
+                    error: 'AI service configuration error. Gemini API key is not configured.',
+                    details: 'Please ensure GEMINI_API_KEY is set in environment variables'
+                },
+                { status: 500 }
+            );
+        } else {
+            console.log('✅ GEMINI_API_KEY found, length:', process.env.GEMINI_API_KEY.length);
+        }
 
-    // Generate content using Gemini
-    console.log('🤖 Calling Gemini API...');
-    
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
-      console.log('📝 Prompt length:', prompt.length, 'characters');
-      
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      console.log('✅ Gemini API success, generated', text.length, 'characters');
-      return NextResponse.json({ 
-        itinerary: text,
-        prompt: prompt 
-      });
-      
-    } catch (geminiError: unknown) {
-      const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
-      console.log('❌ Gemini API failed:', errorMessage);
-      
-      // Return error to user instead of fallback
-      return NextResponse.json(
-        { 
-          error: 'Failed to generate Japan itinerary using AI. Please try again later.',
-          details: `Gemini API Error: ${errorMessage}`
-        },
-        { status: 500 }
-      );
-    }
+        // Generate content using Gemini
+        console.log('🤖 Calling Gemini API...');
 
-  } catch (error) {
-    console.error('Error generating Japan itinerary:', error);
-    return NextResponse.json(
-      { 
-        error: 'Unable to process your Japan travel request. Please check your request and try again.',
-        details: error instanceof Error ? error.message : 'Unknown server error'
-      },
-      { status: 500 }
-    );
-  }
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
+            console.log('📝 Prompt length:', prompt.length, 'characters');
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            console.log('✅ Gemini API success, generated', text.length, 'characters');
+            return NextResponse.json({
+                itinerary: text,
+                prompt: prompt
+            });
+
+        } catch (geminiError: unknown) {
+            const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
+            console.log('❌ Gemini API failed:', errorMessage);
+
+            // Return error to user instead of fallback
+            return NextResponse.json(
+                {
+                    error: 'Failed to generate Japan itinerary using AI. Please try again later.',
+                    details: `Gemini API Error: ${errorMessage}`
+                },
+                { status: 500 }
+            );
+        }
+
+    } catch (error) {
+        console.error('Error generating Japan itinerary:', error);
+        return NextResponse.json(
+            {
+                error: 'Unable to process your Japan travel request. Please check your request and try again.',
+                details: error instanceof Error ? error.message : 'Unknown server error'
+            },
+            { status: 500 }
+        );
+    }
 }

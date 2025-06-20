@@ -9,8 +9,13 @@ export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const userId = session.user.id || session.user.email;
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized - No user identifier' }, { status: 401 });
         }
 
         const { searchParams } = new URL(request.url);
@@ -22,7 +27,7 @@ export async function GET(request: NextRequest) {
         const { data: trips, error, count } = await supabaseServer
             .from('saved_trips')
             .select('*', { count: 'exact' })
-            .eq('user_id', session.user.id)
+            .eq('user_id', userId)
             .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
@@ -48,8 +53,24 @@ export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        console.log('🔍 Trip save attempt - Session info:', {
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            userId: session?.user?.id,
+            userEmail: session?.user?.email,
+            userName: session?.user?.name
+        });
+        
+        if (!session?.user) {
+            console.error('❌ No session or user found');
+            return NextResponse.json({ error: 'Unauthorized - Please sign in again' }, { status: 401 });
+        }
+
+        // Use email as fallback identifier if id is not available
+        const userId = session.user.id || session.user.email;
+        if (!userId) {
+            console.error('❌ No user identifier found');
+            return NextResponse.json({ error: 'Unauthorized - No user identifier' }, { status: 401 });
         }
 
         const body: SaveTripRequest = await request.json();
@@ -68,10 +89,11 @@ export async function POST(request: NextRequest) {
         const shareToken = body.is_public ? crypto.randomUUID() : null;
 
         // Insert the trip
+        console.log('💾 Saving trip with user ID:', userId);
         const { data: trip, error } = await supabaseServer
             .from('saved_trips')
             .insert({
-                user_id: session.user.id,
+                user_id: userId,
                 title: body.title,
                 description: body.description || null,
                 form_data: body.form_data,

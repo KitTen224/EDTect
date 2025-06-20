@@ -79,6 +79,11 @@ export interface TimelineActivity {
     estimatedCost?: number;
     location?: string;
     notes?: string;
+    // Photo integration
+    imageUrl?: string;
+    imageDescription?: string;
+    photoSearchTerms?: string;
+    placeId?: string; // Google Places ID for more accurate photos
     // Transport tracking
     currentLocation?: TransportLocation;
     nextLocation?: TransportLocation;

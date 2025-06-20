@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Save, Bookmark, Check } from 'lucide-react';
+import { Save, Bookmark, Check, LogIn } from 'lucide-react';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
 
 interface SaveTripButtonProps {
@@ -14,10 +15,12 @@ interface SaveTripButtonProps {
 
 export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonProps) {
     const { data: session, status } = useSession();
+    const router = useRouter();
     const [isLoading, setSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [showTitleInput, setShowTitleInput] = useState(false);
     const [title, setTitle] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
     if (status === 'loading') {
         return (
@@ -25,13 +28,18 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
         );
     }
 
+    const handleSignIn = useCallback(() => {
+        const currentUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        router.push(`/auth/signin?callbackUrl=${currentUrl}`);
+    }, [router]);
+
     if (!session) {
         return (
             <button
-                onClick={() => window.location.href = '/auth/signin'}
+                onClick={handleSignIn}
                 className="w-full flex items-center justify-center space-x-2 py-3 px-6 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors border border-red-200"
             >
-                <Bookmark className="w-5 h-5" />
+                <LogIn className="w-5 h-5" />
                 <span>Sign in to save this trip</span>
             </button>
         );
@@ -41,6 +49,8 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
         if (!title.trim()) return;
         
         setSaving(true);
+        setError(null);
+        
         try {
             const response = await fetch('/api/trips', {
                 method: 'POST',
@@ -57,12 +67,14 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
             });
 
             if (!response.ok) {
-                throw new Error('Failed to save trip');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Failed to save trip (${response.status})`);
             }
 
             const savedTrip = await response.json();
             setIsSaved(true);
             setShowTitleInput(false);
+            setError(null);
             onSaved?.(savedTrip.id);
             
             // Reset after showing success
@@ -72,7 +84,8 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
             }, 3000);
         } catch (error) {
             console.error('Error saving trip:', error);
-            alert('Failed to save trip. Please try again.');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save trip. Please try again.';
+            setError(errorMessage);
         } finally {
             setSaving(false);
         }
@@ -97,12 +110,29 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
                 <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (error) setError(null); // Clear error when user types
+                    }}
                     placeholder="Give your trip a name..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-                    onKeyPress={(e) => e.key === 'Enter' && handleSave()}
+                    className={`w-full px-4 py-3 border rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors ${
+                        error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                    onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSave()}
                     autoFocus
+                    disabled={isLoading}
                 />
+                
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="text-red-600 text-sm px-4"
+                    >
+                        {error}
+                    </motion.div>
+                )}
+                
                 <div className="flex space-x-2">
                     <button
                         onClick={handleSave}
@@ -117,8 +147,13 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
                         <span>{isLoading ? 'Saving...' : 'Save Trip'}</span>
                     </button>
                     <button
-                        onClick={() => setShowTitleInput(false)}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        onClick={() => {
+                            setShowTitleInput(false);
+                            setError(null);
+                            setTitle('');
+                        }}
+                        disabled={isLoading}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
                     >
                         Cancel
                     </button>

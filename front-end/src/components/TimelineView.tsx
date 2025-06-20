@@ -11,9 +11,10 @@ import ActivityDetailModal from './ActivityDetailModal';
 interface TimelineViewProps {
     timeline: JapanTimeline;
     onTimelineUpdate?: (updatedTimeline: JapanTimeline) => void;
+    readOnly?: boolean;
 }
 
-export default function TimelineView({ timeline, onTimelineUpdate }: TimelineViewProps) {
+export default function TimelineView({ timeline, onTimelineUpdate, readOnly = false }: TimelineViewProps) {
     const [currentTimeline, setCurrentTimeline] = useState<JapanTimeline>(timeline);
     const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -228,6 +229,7 @@ export default function TimelineView({ timeline, onTimelineUpdate }: TimelineVie
                                     onMoveActivity={moveActivity}
                                     onUpdateActivity={updateActivity}
                                     onShowActivityDetails={handleShowActivityDetails}
+                                    readOnly={readOnly}
                                 />
                             </motion.div>
                         ))}

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TimelineActivity } from '@/types/travel';
+import { photoService, PhotoResult } from '@/lib/photoService';
 
 interface ActivityDetailModalProps {
     activity: TimelineActivity | null;
@@ -12,6 +13,53 @@ interface ActivityDetailModalProps {
 }
 
 export default function ActivityDetailModal({ activity, isOpen, onClose }: ActivityDetailModalProps) {
+    const [photo, setPhoto] = useState<PhotoResult | null>(null);
+    const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
+    const [photoError, setPhotoError] = useState(false);
+
+    // Load photo when activity changes
+    useEffect(() => {
+        if (!activity || !isOpen) return;
+
+        // If activity already has imageUrl, use it
+        if (activity.imageUrl) {
+            setPhoto({
+                url: activity.imageUrl,
+                width: 800,
+                height: 600,
+                source: 'cached'
+            });
+            return;
+        }
+
+        // If we have photoSearchTerms, fetch photo
+        if (activity.photoSearchTerms) {
+            setIsLoadingPhoto(true);
+            setPhotoError(false);
+            
+            photoService.getActivityPhoto({
+                searchTerms: activity.photoSearchTerms,
+                location: activity.location,
+                type: activity.type,
+                placeId: activity.placeId
+            }).then((result) => {
+                setPhoto(result);
+                setIsLoadingPhoto(false);
+            }).catch((error) => {
+                console.error('Failed to load photo:', error);
+                setPhotoError(true);
+                setIsLoadingPhoto(false);
+                // Set fallback photo
+                setPhoto({
+                    url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800',
+                    width: 800,
+                    height: 600,
+                    source: 'fallback'
+                });
+            });
+        }
+    }, [activity, isOpen]);
+
     if (!activity) return null;
 
     const getActivityTypeColor = (type: TimelineActivity['type']) => {
@@ -89,6 +137,58 @@ export default function ActivityDetailModal({ activity, isOpen, onClose }: Activ
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Hero Photo Section */}
+                            {(photo || isLoadingPhoto) && (
+                                <div className="relative h-64 bg-gray-100 overflow-hidden">
+                                    {isLoadingPhoto && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                                            <div className="flex flex-col items-center space-y-3">
+                                                <div className="w-8 h-8 border-3 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+                                                <p className="text-sm text-gray-500">Loading photo...</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {photo && !isLoadingPhoto && (
+                                        <>
+                                            <img
+                                                src={photo.url}
+                                                alt={activity.name}
+                                                className="w-full h-full object-cover"
+                                                onError={() => setPhotoError(true)}
+                                            />
+                                            
+                                            {/* Photo overlay with source attribution */}
+                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-4">
+                                                <div className="flex items-center justify-between text-white text-xs">
+                                                    <span className="opacity-75">
+                                                        {photo.source === 'unsplash' && '📸 Unsplash'}
+                                                        {photo.source === 'fallback' && '🌸 Stock Photo'}
+                                                        {photo.source === 'cached' && '💾 Cached'}
+                                                    </span>
+                                                    {photo.attribution && (
+                                                        <span className="opacity-60 max-w-48 truncate">
+                                                            {photo.attribution}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {photoError && !isLoadingPhoto && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                                            <div className="flex flex-col items-center space-y-2 text-gray-400">
+                                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <p className="text-sm">Photo unavailable</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Content */}
                             <div className="p-6 space-y-6">

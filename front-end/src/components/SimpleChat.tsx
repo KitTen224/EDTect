@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User } from 'lucide-react';
 
 interface ChatMessage {
@@ -93,204 +94,135 @@ export default function SimpleChat({ currentPlan, onClose }: SimpleChatProps) {
     };
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                bottom: '120px',
-                right: '30px',
-                zIndex: 999999,
-                width: '400px',
-                maxWidth: '90vw',
-                height: '600px',
-                maxHeight: '80vh',
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                border: '1px solid #e5e7eb',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-            }}
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-24 right-6 z-50 w-96 max-w-[90vw] h-[600px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden backdrop-blur-sm"
         >
             {/* Header */}
-            <div 
-                style={{
-                    backgroundColor: '#dc2626',
-                    color: 'white',
-                    padding: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Bot size={20} />
-                    <span style={{ fontWeight: '600' }}>AIチャット</span>
+            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                        <Bot className="w-4 h-4" />
+                    </div>
+                    <div>
+                        <h3 className="font-light text-lg">AIチャット</h3>
+                        <p className="text-xs text-red-100">旅程の相談・変更</p>
+                    </div>
                 </div>
-                <button
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'white',
-                        cursor: 'pointer',
-                        padding: '4px'
-                    }}
+                    className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                 >
-                    <X size={20} />
-                </button>
+                    <X className="w-4 h-4" />
+                </motion.button>
             </div>
 
             {/* Messages */}
-            <div 
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px'
-                }}
-            >
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
                 {messages.map((message) => (
-                    <div
+                    <motion.div
                         key={message.id}
-                        style={{
-                            display: 'flex',
-                            justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start'
-                        }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            style={{
-                                maxWidth: '80%',
-                                borderRadius: '12px',
-                                padding: '12px',
-                                backgroundColor: message.role === 'user' ? '#dc2626' : '#f3f4f6',
-                                color: message.role === 'user' ? 'white' : '#374151'
-                            }}
+                            className={`max-w-[85%] rounded-2xl p-4 ${
+                                message.role === 'user'
+                                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
+                                    : 'bg-white text-gray-800 shadow-md border border-gray-100'
+                            }`}
                         >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                            <div className="flex items-start gap-3">
                                 {message.role === 'assistant' && (
-                                    <Bot size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+                                    <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <Bot className="w-3 h-3 text-red-600" />
+                                    </div>
                                 )}
                                 {message.role === 'user' && (
-                                    <User size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+                                    <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <User className="w-3 h-3" />
+                                    </div>
                                 )}
-                                <span style={{ fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-line' }}>
+                                <span className="text-sm leading-relaxed whitespace-pre-line">
                                     {message.content}
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 ))}
                 
                 {isLoading && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                        <div
-                            style={{
-                                backgroundColor: '#f3f4f6',
-                                borderRadius: '12px',
-                                padding: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}
-                        >
-                            <Bot size={16} />
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></div>
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.1s' }}></div>
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.2s' }}></div>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex justify-start"
+                    >
+                        <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <Bot className="w-3 h-3 text-red-600" />
+                                </div>
+                                <div className="flex gap-1">
+                                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Suggested Questions */}
             {messages.length <= 1 && (
-                <div style={{ padding: '0 16px 8px' }}>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>
-                        よくある質問:
-                    </div>
-                    <div style={{ display: 'grid', gap: '4px' }}>
+                <div className="px-6 pb-4">
+                    <div className="text-xs font-medium text-gray-500 mb-3">💡 よくある質問:</div>
+                    <div className="space-y-2">
                         {SUGGESTED_QUESTIONS.slice(0, 3).map((question, index) => (
-                            <button
+                            <motion.button
                                 key={index}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => handleSuggestedQuestion(question)}
-                                style={{
-                                    fontSize: '12px',
-                                    textAlign: 'left',
-                                    padding: '8px',
-                                    backgroundColor: '#f9fafb',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '6px',
-                                    color: '#374151',
-                                    cursor: 'pointer',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = '#f9fafb';
-                                }}
+                                className="w-full text-xs text-left p-3 bg-gray-50 hover:bg-red-50 hover:border-red-200 rounded-xl text-gray-700 hover:text-red-700 transition-all duration-200 border border-gray-100"
                             >
                                 {question}
-                            </button>
+                            </motion.button>
                         ))}
                     </div>
                 </div>
             )}
 
             {/* Input */}
-            <div 
-                style={{
-                    padding: '16px',
-                    borderTop: '1px solid #e5e7eb',
-                    display: 'flex',
-                    gap: '8px'
-                }}
-            >
-                <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(inputMessage)}
-                    placeholder="旅程の相談や変更はチャットでAIにお任せください"
-                    style={{
-                        flex: 1,
-                        padding: '12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        outline: 'none',
-                        transition: 'border-color 0.2s'
-                    }}
-                    onFocus={(e) => {
-                        e.currentTarget.style.borderColor = '#dc2626';
-                    }}
-                    onBlur={(e) => {
-                        e.currentTarget.style.borderColor = '#d1d5db';
-                    }}
-                />
-                <button
-                    onClick={() => handleSendMessage(inputMessage)}
-                    disabled={!inputMessage.trim() || isLoading}
-                    style={{
-                        backgroundColor: inputMessage.trim() && !isLoading ? '#dc2626' : '#9ca3af',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Send size={16} />
-                </button>
+            <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage(inputMessage)}
+                        placeholder="旅程について何でもお聞きください..."
+                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white transition-all duration-200 placeholder-gray-400"
+                    />
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleSendMessage(inputMessage)}
+                        disabled={!inputMessage.trim() || isLoading}
+                        className="bg-gradient-to-r from-red-600 to-red-700 text-white p-3 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
+                    >
+                        <Send className="w-4 h-4" />
+                    </motion.button>
+                </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

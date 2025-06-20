@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // Check if user owns the trip
         const { data: existingTrip, error: checkError } = await supabaseServer
             .from('saved_trips')
-            .select('user_id')
+            .select('user_id, share_token')
             .eq('id', params.id)
             .single();
 

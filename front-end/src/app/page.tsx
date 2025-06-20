@@ -4,6 +4,8 @@ import JapanTravelForm from '@/components/JapanTravelForm';
 import TimelineView from '@/components/TimelineView';
 import { Header } from '@/components/ui/Header';
 import { SaveTripButton } from '@/components/ui/SaveTripButton';
+import { ErrorBoundary, SimpleErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { EnvDiagnostics } from '@/components/ui/EnvDiagnostics';
 import ChatAI from '@/components/ChatAI';
 import SimpleChat from '@/components/SimpleChat';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
@@ -139,13 +141,21 @@ export default function Home() {
         } finally {
             setIsLoading(false);
         }
-    };    if (!tripData) {
+    };
+
+    if (!tripData) {
         return (
             <div>
-                <JapanTravelForm
-                    onSubmit={handleJapanTravelFormSubmit}
-                    isLoading={isLoading}
-                />
+                <ErrorBoundary
+                    onError={(error, errorInfo) => {
+                        console.error('Japan Travel Form error:', error, errorInfo);
+                    }}
+                >
+                    <JapanTravelForm
+                        onSubmit={handleJapanTravelFormSubmit}
+                        isLoading={isLoading}
+                    />
+                </ErrorBoundary>
                 
                 {/* Chat AI Button for Form Page */}
                 <div
@@ -328,10 +338,39 @@ export default function Home() {
                                 
                                 {timeline ? (
                                     <div className="w-full">
-                                        <TimelineView 
-                                            timeline={timeline} 
-                                            onTimelineUpdate={(updatedTimeline) => setTimeline(updatedTimeline)}
-                                        />
+                                        <ErrorBoundary
+                                            onError={(error, errorInfo) => {
+                                                console.error('Timeline component error:', error, errorInfo);
+                                            }}
+                                            fallback={
+                                                <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+                                                    <div className="text-center">
+                                                        <div className="text-red-500 text-4xl mb-3">⚠️</div>
+                                                        <h4 className="text-red-800 font-medium mb-2">Timeline Display Error</h4>
+                                                        <p className="text-red-700 text-sm mb-4">
+                                                            There was an issue displaying your itinerary. This might be due to corrupted data from the AI generation.
+                                                        </p>
+                                                        <button
+                                                            onClick={() => {
+                                                                setTimeline(null);
+                                                                setItinerary(null);
+                                                                if (tripData) {
+                                                                    handleJapanTravelFormSubmit(tripData);
+                                                                }
+                                                            }}
+                                                            className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                                                        >
+                                                            Regenerate Itinerary
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        >
+                                            <TimelineView 
+                                                timeline={timeline} 
+                                                onTimelineUpdate={(updatedTimeline) => setTimeline(updatedTimeline)}
+                                            />
+                                        </ErrorBoundary>
                                     </div>
                                 ) : null}
                                 
@@ -383,13 +422,15 @@ export default function Home() {
                                 <div className="mt-6 space-y-4">
                                     {/* Save Trip Button */}
                                     {tripData && timeline && (
-                                        <SaveTripButton 
-                                            formData={tripData}
-                                            timeline={timeline}
-                                            onSaved={(tripId) => {
-                                                console.log('Trip saved with ID:', tripId);
-                                            }}
-                                        />
+                                        <SimpleErrorBoundary message="Unable to load save trip functionality">
+                                            <SaveTripButton 
+                                                formData={tripData}
+                                                timeline={timeline}
+                                                onSaved={(tripId) => {
+                                                    console.log('Trip saved with ID:', tripId);
+                                                }}
+                                            />
+                                        </SimpleErrorBoundary>
                                     )}
                                     
                                     <div className="flex flex-col sm:flex-row gap-3">
@@ -427,8 +468,11 @@ export default function Home() {
                                 </p>
                             </div>
                         </div>
-                    )}                </div>
-            </div>            {/* SIMPLE CHAT BUTTON - NO COMPLEX COMPONENT */}
+                    )}
+                </div>
+            </div>
+
+            {/* SIMPLE CHAT BUTTON - NO COMPLEX COMPONENT */}
             <div
                 style={{
                     position: 'fixed',
@@ -462,6 +506,9 @@ export default function Home() {
                     onClose={() => setShowChat(false)}
                 />
             )}
+            
+            {/* Environment Diagnostics (Development Only) */}
+            <EnvDiagnostics />
         </div>
     );
 }

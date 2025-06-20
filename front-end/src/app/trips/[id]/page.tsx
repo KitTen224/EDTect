@@ -289,7 +289,6 @@ export default function TripDetailPage() {
                                 // TODO: Implement auto-save functionality
                             }
                         }}
-                        readOnly={!isOwner}
                     />
                 </motion.div>
             </div>

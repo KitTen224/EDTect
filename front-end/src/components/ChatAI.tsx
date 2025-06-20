@@ -173,116 +173,103 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
             document.addEventListener('mouseup', handleMouseUp);
         }
     };    return (
-        <div style={{ position: 'relative', zIndex: 1 }}>
-            {/* SUPER SIMPLE TEST BUTTON - SHOULD ALWAYS BE VISIBLE */}
-            <div
-                style={{
-                    position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
-                    zIndex: 9999999,
-                    backgroundColor: '#ff0000',
-                    color: 'white',
-                    padding: '15px',
-                    borderRadius: '50%',
-                    cursor: 'pointer',
-                    width: '70px',
-                    height: '70px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '30px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    border: '3px solid white'
-                }}
+        <div className="relative z-10">
+            {/* Chat Trigger Button - Redesigned to match app style */}
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                    console.log('🤖 SUPER SIMPLE Chat button clicked!');
-                    alert('SUPER SIMPLE Chat button works!');
+                    console.log('🤖 Chat button clicked!');
                     setIsOpen(true);
                 }}
+                className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-red-600 hover:bg-red-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group"
                 title="AIチャットを開く"
+                data-chat-button="true"
             >
-                💬
-            </div>
-
-            {/* Test Button - Always Visible for Debugging */}
-            <div
-                data-test-button="true"
-                className="fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-sm font-bold"
-                style={{ 
-                    zIndex: 999999,
-                    position: 'fixed',
-                    top: '16px',
-                    right: '16px'
-                }}
-                onClick={() => {
-                    console.log('🧪 Test button clicked!');
-                    alert('Test button works! Chat AI should be visible at bottom-right corner.');
-                }}
-            >
-                TEST CHAT
-            </div>
+                <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
+                
+                {/* Notification dot for new features */}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white"></div>
+            </motion.button>
 
             {/* Chat Window */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         ref={chatBoxRef}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
                         style={{
                             position: 'fixed',
                             left: `${position.x}px`,
                             top: `${position.y}px`,
                             zIndex: 1000
                         }}
-                        className="w-96 max-w-[90vw] h-[500px] max-h-[80vh] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col"
+                        className="w-96 max-w-[90vw] h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden backdrop-blur-sm"
                     >
                         {/* Header */}
                         <div 
-                            className="bg-red-600 text-white p-4 rounded-t-xl flex items-center justify-between cursor-move"
+                            className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between cursor-move"
                             onMouseDown={handleDragStart}
                         >
-                            <div className="flex items-center gap-2">
-                                <Bot className="w-5 h-5" />
-                                <span className="font-medium">AIチャット</span>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                    <Bot className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="font-light text-lg">AIチャット</h3>
+                                    <p className="text-xs text-red-100">旅程の相談・変更</p>
+                                </div>
                             </div>
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                                 onClick={() => setIsOpen(false)}
-                                className="text-white hover:text-gray-200 transition-colors"
+                                className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                             >
-                                <X className="w-5 h-5" />
-                            </button>
+                                <X className="w-4 h-4" />
+                            </motion.button>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">                            {messages.map((message) => (
-                                <div
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
+                            {messages.map((message) => (
+                                <motion.div
                                     key={message.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
                                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-[80%] rounded-lg p-3 ${
+                                        className={`max-w-[85%] rounded-2xl p-4 ${
                                             message.role === 'user'
-                                                ? 'bg-red-600 text-white'
-                                                : 'bg-gray-100 text-gray-800'
+                                                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
+                                                : 'bg-white text-gray-800 shadow-md border border-gray-100'
                                         }`}
                                     >
-                                        <div className="flex items-start gap-2">
+                                        <div className="flex items-start gap-3">
                                             {message.role === 'assistant' && (
-                                                <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                                <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <Bot className="w-3 h-3 text-red-600" />
+                                                </div>
                                             )}
                                             {message.role === 'user' && (
-                                                <User className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <User className="w-3 h-3" />
+                                                </div>
                                             )}
                                             <div>
-                                                <span className="text-sm whitespace-pre-line">{message.content}</span>
+                                                <span className="text-sm leading-relaxed whitespace-pre-line">{message.content}</span>
                                                 {/* Show confirm button for plan updates */}
                                                 {message.role === 'assistant' && 
                                                  message.content.includes('このプランで決定') && (
-                                                    <div className="mt-2">
-                                                        <button
+                                                    <div className="mt-3">
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
                                                             onClick={() => {
                                                                 if (onPlanUpdate) {
                                                                     onPlanUpdate({ timeline: currentPlan });
@@ -295,71 +282,81 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
                                                                 };
                                                                 setMessages(prev => [...prev, confirmMsg]);
                                                             }}
-                                                            className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors"
+                                                            className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
                                                         >
                                                             このプランで決定
-                                                        </button>
+                                                        </motion.button>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                             
                             {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-gray-100 rounded-lg p-3">
-                                        <div className="flex items-center gap-2">
-                                            <Bot className="w-4 h-4" />
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex justify-start"
+                                >
+                                    <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center">
+                                                <Bot className="w-3 h-3 text-red-600" />
+                                            </div>
                                             <div className="flex gap-1">
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                                <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce"></div>
+                                                <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                                <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
 
                         {/* Suggested Questions */}
                         {messages.length <= 1 && (
-                            <div className="px-4 pb-2">
-                                <div className="text-xs text-gray-600 mb-2">よくある質問:</div>
-                                <div className="grid grid-cols-1 gap-1">
+                            <div className="px-6 pb-4">
+                                <div className="text-xs font-medium text-gray-500 mb-3">💡 よくある質問:</div>
+                                <div className="space-y-2">
                                     {SUGGESTED_QUESTIONS.slice(0, 3).map((question, index) => (
-                                        <button
+                                        <motion.button
                                             key={index}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
                                             onClick={() => handleSuggestedQuestion(question)}
-                                            className="text-xs text-left p-2 bg-gray-50 hover:bg-gray-100 rounded text-gray-700 transition-colors"
+                                            className="w-full text-xs text-left p-3 bg-gray-50 hover:bg-red-50 hover:border-red-200 rounded-xl text-gray-700 hover:text-red-700 transition-all duration-200 border border-gray-100"
                                         >
                                             {question}
-                                        </button>
+                                        </motion.button>
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {/* Input */}
-                        <div className="p-4 border-t border-gray-200">
-                            <div className="flex gap-2">
+                        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+                            <div className="flex gap-3">
                                 <input
                                     type="text"
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(inputMessage)}
-                                    placeholder="旅程の相談や変更はチャットでAIにお任せください"
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage(inputMessage)}
+                                    placeholder="旅程について何でもお聞きください..."
+                                    className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white transition-all duration-200 placeholder-gray-400"
                                 />
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => handleSendMessage(inputMessage)}
                                     disabled={!inputMessage.trim() || isLoading}
-                                    className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="bg-gradient-to-r from-red-600 to-red-700 text-white p-3 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
                                 >
                                     <Send className="w-4 h-4" />
-                                </button>
+                                </motion.button>
                             </div>
                         </div>                    </motion.div>
                 )}
