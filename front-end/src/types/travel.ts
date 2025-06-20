@@ -163,7 +163,7 @@ export interface SavedTrip {
     total_estimated_cost?: number;
     regions: RegionWithDays[];
     travel_styles: JapanTravelStyle[];
-    season?: string;
+    seasons?: string;
     
     // Sharing and collaboration
     is_public: boolean;
