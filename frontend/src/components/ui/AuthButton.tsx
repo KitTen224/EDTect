@@ -4,11 +4,14 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, LogOut, Bookmark, Settings } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 export function AuthButton() {
     const { data: session, status } = useSession();
     const [showMenu, setShowMenu] = useState(false);
+    const router = useRouter();
+    const pathname = usePathname();
 
     // Temporarily hide auth button for frontend development
     const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
@@ -90,8 +93,7 @@ export function AuthButton() {
                         <button
                             onClick={() => {
                                 setShowMenu(false);
-                                // Navigate to saved trips
-                                window.location.href = '/trips';
+                                router.push('/trips');
                             }}
                             className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         >
@@ -102,8 +104,9 @@ export function AuthButton() {
                         <button
                             onClick={() => {
                                 setShowMenu(false);
-                                // Navigate to profile settings
-                                window.location.href = '/profile';
+                                // Pass current URL as returnUrl so user comes back here after saving
+                                const returnUrl = encodeURIComponent(pathname);
+                                router.push(`/profile?returnUrl=${returnUrl}`);
                             }}
                             className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         >

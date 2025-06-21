@@ -2,55 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/ui/Header';
 import { User, Save, ArrowLeft } from 'lucide-react';
 
-// Import the travel data from JapanTravelForm
-const japanRegions = [
-    { id: 'kanto', name: 'Kantō', nameJapanese: '関東', icon: '🏙️' },
-    { id: 'kansai', name: 'Kansai', nameJapanese: '関西', icon: '⛩️' },
-    { id: 'chubu', name: 'Chūbu', nameJapanese: '中部', icon: '🗻' },
-    { id: 'tohoku', name: 'Tōhoku', nameJapanese: '東北', icon: '🌸' },
-    { id: 'kyushu', name: 'Kyūshū', nameJapanese: '九州', icon: '🌺' },
-    { id: 'hokkaido', name: 'Hokkaidō', nameJapanese: '北海道', icon: '❄️' }
-];
-
-const travelStyles = [
-    { id: 'traditional', name: 'Traditional', nameJapanese: '伝統的', icon: '⛩️' },
-    { id: 'modern', name: 'Modern', nameJapanese: '現代的', icon: '🏙️' },
-    { id: 'nature', name: 'Nature', nameJapanese: '自然', icon: '🌿' },
-    { id: 'spiritual', name: 'Spiritual', nameJapanese: '精神的', icon: '🧘' },
-    { id: 'foodie', name: 'Culinary', nameJapanese: '料理', icon: '🍜' },
-    { id: 'ryokan', name: 'Ryokan', nameJapanese: '旅館', icon: '🏨' }
-];
-
-const seasons = [
-    { id: 'spring', name: 'Spring', nameJapanese: '春', description: 'Cherry blossoms and mild weather' },
-    { id: 'summer', name: 'Summer', nameJapanese: '夏', description: 'Festivals and vibrant energy' },
-    { id: 'autumn', name: 'Autumn', nameJapanese: '秋', description: 'Fall foliage and comfortable temperatures' },
-    { id: 'winter', name: 'Winter', nameJapanese: '冬', description: 'Snow, hot springs, and winter illuminations' }
-];
-
 export default function ProfilePage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     
-    // Profile data
+    // Profile data - simplified to just essentials
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [language, setLanguage] = useState<'en' | 'ja'>('en');
-    const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'intermediate' | 'expert'>('beginner');
-    const [budgetPreference, setBudgetPreference] = useState<'budget' | 'moderate' | 'luxury'>('moderate');
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     
-    // Travel preferences
-    const [preferredRegions, setPreferredRegions] = useState<string[]>([]);
-    const [preferredStyles, setPreferredStyles] = useState<string[]>([]);
-    const [preferredSeasons, setPreferredSeasons] = useState<string[]>([]);
+    // Get return URL from query params
+    const returnUrl = searchParams.get('returnUrl') || '/';
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -63,23 +33,23 @@ export default function ProfilePage() {
             setName(session.user.name || '');
             setEmail(session.user.email || '');
             
-            // Load user preferences from database
+            // Load user preferences from localStorage or API
             loadUserProfile();
         }
     }, [status, session, router]);
 
     const loadUserProfile = async () => {
-        // TODO: Implement API call to load user profile preferences
-        // For now, we'll use default values
         setIsLoading(true);
         try {
-            // Simulated API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Load language preference from localStorage
+            const savedLanguage = localStorage.getItem('user-language') as 'en' | 'ja';
+            if (savedLanguage) {
+                setLanguage(savedLanguage);
+            }
             
-            // Set some example preferences
-            setPreferredRegions(['kanto', 'kansai']);
-            setPreferredStyles(['traditional', 'foodie']);
-            setPreferredSeasons(['spring', 'autumn']);
+            // TODO: Implement API call to load user profile data from database
+            // For now, we just use the data from session and localStorage
+            await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
             console.error('Error loading profile:', error);
         } finally {
@@ -90,41 +60,21 @@ export default function ProfilePage() {
     const saveProfile = async () => {
         setIsSaving(true);
         try {
-            // TODO: Implement API call to save user profile
-            // Simulated API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Save language preference to localStorage
+            localStorage.setItem('user-language', language);
             
-            alert('Profile saved successfully!');
+            // TODO: Implement API call to save user profile name changes
+            // For now, just simulate the API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // After successful save, redirect back to where user came from
+            router.push(returnUrl);
         } catch (error) {
             console.error('Error saving profile:', error);
             alert('Failed to save profile. Please try again.');
-        } finally {
             setIsSaving(false);
         }
-    };
-
-    const toggleRegion = (regionId: string) => {
-        setPreferredRegions(prev => 
-            prev.includes(regionId) 
-                ? prev.filter(id => id !== regionId)
-                : [...prev, regionId]
-        );
-    };
-
-    const toggleStyle = (styleId: string) => {
-        setPreferredStyles(prev => 
-            prev.includes(styleId) 
-                ? prev.filter(id => id !== styleId)
-                : [...prev, styleId]
-        );
-    };
-
-    const toggleSeason = (seasonId: string) => {
-        setPreferredSeasons(prev => 
-            prev.includes(seasonId) 
-                ? prev.filter(id => id !== seasonId)
-                : [...prev, seasonId]
-        );
+        // Note: We don't set isSaving to false here because we're redirecting
     };
 
     if (status === 'loading' || isLoading) {
@@ -154,7 +104,7 @@ export default function ProfilePage() {
             <div className="container mx-auto px-4 py-8 max-w-2xl">
                 {/* Back Button */}
                 <button
-                    onClick={() => router.back()}
+                    onClick={() => router.push(returnUrl)}
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors mb-6"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -163,7 +113,7 @@ export default function ProfilePage() {
 
                 <Header 
                     title="Profile Settings"
-                    subtitle="Customize your Japan travel preferences"
+                    subtitle="Update your account information"
                     showAuth={false}
                 />
 
@@ -188,6 +138,7 @@ export default function ProfilePage() {
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
+                                    placeholder="Enter your display name"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                                 />
                             </div>
@@ -206,47 +157,6 @@ export default function ProfilePage() {
                                     Email cannot be changed here. Contact support if needed.
                                 </p>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Travel Preferences */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                        <h3 className="text-xl font-medium text-gray-800 mb-4">
-                            Travel Preferences
-                        </h3>
-                        
-                        <div className="space-y-6">
-                            {/* Experience Level */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Japan Travel Experience
-                                </label>
-                                <select
-                                    value={experienceLevel}
-                                    onChange={(e) => setExperienceLevel(e.target.value as 'beginner' | 'intermediate' | 'expert')}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-                                >
-                                    <option value="beginner">Beginner - First time in Japan</option>
-                                    <option value="intermediate">Intermediate - Been to Japan before</option>
-                                    <option value="expert">Expert - Very familiar with Japan</option>
-                                </select>
-                            </div>
-
-                            {/* Budget Preference */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Budget Preference
-                                </label>
-                                <select
-                                    value={budgetPreference}
-                                    onChange={(e) => setBudgetPreference(e.target.value as 'budget' | 'moderate' | 'luxury')}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-                                >
-                                    <option value="budget">Budget - Economical options</option>
-                                    <option value="moderate">Moderate - Balanced comfort and cost</option>
-                                    <option value="luxury">Luxury - Premium experiences</option>
-                                </select>
-                            </div>
 
                             {/* Language Preference */}
                             <div>
@@ -262,113 +172,11 @@ export default function ProfilePage() {
                                     <option value="ja">日本語 (Japanese)</option>
                                 </select>
                             </div>
-
-                            {/* Preferred Regions */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3">
-                                    Preferred Regions
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {japanRegions.map((region) => (
-                                        <button
-                                            key={region.id}
-                                            onClick={() => toggleRegion(region.id)}
-                                            className={`p-3 rounded-lg border-2 transition-all text-left ${
-                                                preferredRegions.includes(region.id)
-                                                    ? 'border-red-400 bg-red-50'
-                                                    : 'border-gray-300 bg-white hover:border-gray-400'
-                                            }`}
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-lg">{region.icon}</span>
-                                                <span className="font-medium">{region.name}</span>
-                                            </div>
-                                            <div className="text-sm text-gray-600">{region.nameJapanese}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Preferred Travel Styles */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3">
-                                    Preferred Travel Styles
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {travelStyles.map((style) => (
-                                        <button
-                                            key={style.id}
-                                            onClick={() => toggleStyle(style.id)}
-                                            className={`p-3 rounded-lg border-2 transition-all text-left ${
-                                                preferredStyles.includes(style.id)
-                                                    ? 'border-red-400 bg-red-50'
-                                                    : 'border-gray-300 bg-white hover:border-gray-400'
-                                            }`}
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-lg">{style.icon}</span>
-                                                <span className="font-medium">{style.name}</span>
-                                            </div>
-                                            <div className="text-sm text-gray-600">{style.nameJapanese}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Preferred Seasons */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3">
-                                    Preferred Seasons
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {seasons.map((season) => (
-                                        <button
-                                            key={season.id}
-                                            onClick={() => toggleSeason(season.id)}
-                                            className={`p-3 rounded-lg border-2 transition-all text-left ${
-                                                preferredSeasons.includes(season.id)
-                                                    ? 'border-red-400 bg-red-50'
-                                                    : 'border-gray-300 bg-white hover:border-gray-400'
-                                            }`}
-                                        >
-                                            <div className="font-medium">{season.name}</div>
-                                            <div className="text-sm text-gray-600">{season.nameJapanese}</div>
-                                            <div className="text-xs text-gray-500 mt-1">{season.description}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Settings */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                        <h3 className="text-xl font-medium text-gray-800 mb-4">
-                            Notification Settings
-                        </h3>
-                        
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="font-medium text-gray-800">Email Notifications</p>
-                                <p className="text-sm text-gray-600">Receive updates about new features and travel tips</p>
-                            </div>
-                            <button
-                                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    notificationsEnabled ? 'bg-red-600' : 'bg-gray-300'
-                                }`}
-                            >
-                                <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                        notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
-                                    }`}
-                                />
-                            </button>
                         </div>
                     </div>
 
                     {/* Save Button */}
-                    <div className="flex justify-end">
+                    <div className="flex justify-center">
                         <button
                             onClick={saveProfile}
                             disabled={isSaving}
@@ -379,7 +187,7 @@ export default function ProfilePage() {
                             ) : (
                                 <Save className="w-5 h-5" />
                             )}
-                            <span>{isSaving ? 'Saving...' : 'Save Profile'}</span>
+                            <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
                         </button>
                     </div>
                 </motion.div>
