@@ -254,6 +254,12 @@ export default function Home() {
                                         onClick={() => {
                                             setError(null);
                                             setTripData(null);
+                                            // Clear the form state from localStorage
+                                            try {
+                                                localStorage.removeItem('japan-travel-form-state');
+                                            } catch (error) {
+                                                console.error('Error clearing form state:', error);
+                                            }
                                         }}
                                         className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
                                     >
@@ -350,6 +356,12 @@ export default function Home() {
                                                 setTripData(null);
                                                 setShowRawOutput(false);
                                                 setLastPrompt(null);
+                                                // Clear the form state from localStorage
+                                                try {
+                                                    localStorage.removeItem('japan-travel-form-state');
+                                                } catch (error) {
+                                                    console.error('Error clearing form state:', error);
+                                                }
                                             }}
                                             className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
                                         >

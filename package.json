@@ -1,0 +1,36 @@
+{
+  "name": "edtect",
+  "version": "1.0.0",
+  "description": "Japan Travel Planner - AI-powered itinerary planning for Japanese destinations",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend",
+    "build:frontend": "npm run build --workspace=frontend", 
+    "build:backend": "npm run build --workspace=backend",
+    "start": "npm run start --workspace=frontend",
+    "lint": "npm run lint --workspace=frontend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "clean": "npm run clean:cache && npm run clean:logs",
+    "clean:cache": "rm -rf frontend/.next frontend/node_modules/.cache backend/storage/framework/cache/data/*",
+    "clean:logs": "rm -f backend/storage/logs/*.log backend/php_errors.log",
+    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend"
+  },
+  "keywords": [
+    "japan",
+    "travel",
+    "ai",
+    "itinerary",
+    "planning",
+    "next.js",
+    "laravel"
+  ],
+  "author": "EDTect Team",
+  "license": "MIT"
+}

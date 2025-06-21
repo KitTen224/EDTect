@@ -1,23 +1,93 @@
+# EDTect - Japan Travel Planner
 
-#ひとり旅プランナー	#
+A minimalist, Japan-focused AI travel planning application that creates personalized itineraries for exploring different regions of Japan.
 
-テーマを選んだ理由	"私はひとり旅をしてみたいのですが、行き先の計画や、食事・観光・宿泊などを一人で探すのはとても大変です。さらに、宿の予約などもサイトを行き来するのが面倒です。
+## 🏗️ Project Structure
 
-このシステムでは、地図上での旅程計画に加え、グルメ・レジャー・宿泊施設の提案とその場での予約もできる機能を目指します。"				
-					
-目的	地図を使って自分だけの旅程を自由に設計				
-	各地点周辺にあるおすすめのレストラン・カフェ・観光地・ホテルを表示				
-	詳細情報とレビューを確認し、そのまま予約も可能				
-	ひとり旅でも安心・快適に旅できる体験を提供				
-					
-主な機能					
-ユーザー	行き先をフォームまたはマップで追加				
-	行き先の順番をドラッグ＆ドロップで変更				
-	地図上にルートを表示（距離・時間）				
-	各地点や経路に沿って、グルメ・観光・ホテルを表示				
-	提案された施設の詳細を確認し、そのまま予約できる				
-	データをlocalStorageに保存し、後から再開可能				
-					
-管理者画面	提案スポット（グルメ・ホテル・観光地）のデータ管理				
-	APIだけで足りない場合に、手動でデータを追加				
-	ユーザーの行動や人気ルートの分析も可能				
+```
+EDTect/
+├── frontend/           # Next.js 14 + TypeScript React app
+├── backend/           # Laravel PHP API
+├── docs/             # Project documentation
+├── image/            # Assets and images
+└── package.json      # Workspace configuration
+```
+
+## 🚀 Quick Start
+
+### Development
+
+```bash
+# Install all dependencies
+npm run install:all
+
+# Start frontend development server
+npm run dev
+
+# Or start both services
+npm run dev:frontend    # Next.js on :3000
+npm run dev:backend     # Laravel on :8000
+```
+
+### Build & Deploy
+
+```bash
+# Build frontend for production
+npm run build
+
+# Start production server
+npm run start
+```
+
+### Maintenance
+
+```bash
+# Clean cache and temporary files
+npm run clean
+
+# Lint frontend code
+npm run lint
+```
+
+## 🎌 Features
+
+- **Japan Region Selection**: 6 major regions with cultural context
+- **Travel Style Personalization**: Traditional, Modern, Nature, Spiritual, Culinary, Ryokan
+- **Seasonal Planning**: Season-specific activities and cultural events
+- **AI-Powered Recommendations**: Personalized itinerary generation
+- **Interactive Timeline**: Drag-and-drop activity planning
+- **Budget Management**: Real-time cost tracking and optimization
+
+## 🛠️ Tech Stack
+
+### Frontend
+- Next.js 14 with TypeScript
+- Tailwind CSS for styling
+- Framer Motion for animations
+- React DnD for drag-and-drop
+- NextAuth.js for authentication
+- Supabase for database
+
+### Backend
+- Laravel 10 PHP framework
+- MySQL database
+- RESTful API design
+- Authentication with Sanctum
+
+## 📚 Documentation
+
+- [Frontend Documentation](docs/frontend-README.md)
+- [Backend Documentation](docs/backend-README.md)
+- [Project Vision](../CLAUDE.md)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.

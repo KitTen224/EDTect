@@ -1,3 +1,0 @@
-Module not found: Can't resolve 'nodemailer'
-
-./node_modules/next-auth/providers/email.js (7:19)

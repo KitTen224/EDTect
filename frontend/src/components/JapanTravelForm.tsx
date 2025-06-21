@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JapanTravelFormData, JapanRegion, JapanTravelStyle, JapanSeason, RegionWithDays } from '@/types/travel';
 import { Header } from './ui/Header';
@@ -146,6 +146,47 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
     const [selectedSeason, setSelectedSeason] = useState<JapanSeason | null>(null);
     const [step, setStep] = useState<'region' | 'ordering' | 'style' | 'season' | 'summary'>('region');
 
+    const STORAGE_KEY = 'japan-travel-form-state';
+
+    // Load state from localStorage on component mount
+    useEffect(() => {
+        try {
+            const savedState = localStorage.getItem(STORAGE_KEY);
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                if (parsedState.selectedRegions && parsedState.selectedRegions.length > 0) {
+                    setSelectedRegions(parsedState.selectedRegions);
+                }
+                if (parsedState.selectedStyles && parsedState.selectedStyles.length > 0) {
+                    setSelectedStyles(parsedState.selectedStyles);
+                }
+                if (parsedState.selectedSeason) {
+                    setSelectedSeason(parsedState.selectedSeason);
+                }
+                if (parsedState.step && parsedState.step !== 'region') {
+                    setStep(parsedState.step);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading form state from localStorage:', error);
+        }
+    }, []);
+
+    // Save state to localStorage whenever it changes
+    useEffect(() => {
+        try {
+            const stateToSave = {
+                selectedRegions,
+                selectedStyles,
+                selectedSeason,
+                step
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+        } catch (error) {
+            console.error('Error saving form state to localStorage:', error);
+        }
+    }, [selectedRegions, selectedStyles, selectedSeason, step]);
+
     const totalDays = selectedRegions.reduce((sum, regionWithDays) => sum + regionWithDays.days, 0);
     const maxDays = 7;
 
@@ -180,6 +221,14 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
         }
     };
 
+    const clearFormState = () => {
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+            console.error('Error clearing form state from localStorage:', error);
+        }
+    };
+
     const handleSubmit = () => {
         if (selectedRegions.length > 0 && totalDays > 0) {
             // Sort regions by their order before submitting
@@ -192,7 +241,9 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                 season: selectedSeason || undefined,
                 interests: [] // We'll implement this later
             };
+            
             onSubmit(formData);
+            // Note: Form state will be cleared when user navigates to results page
         }
     };
 
@@ -205,8 +256,8 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                 <Header />
 
                 {/* Progress Indicator */}
-                <div className="flex justify-center mb-8">
-                    <div className="flex space-x-2">
+                <div className="text-center mb-8">
+                    <div className="flex justify-center space-x-2 mb-4">
                         {['region', 'ordering', 'style', 'season', 'summary'].map((stepName, index) => (
                             <div 
                                 key={stepName}
@@ -217,6 +268,35 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                             />
                         ))}
                     </div>
+                    
+                    {/* Step Labels */}
+                    <div className="text-sm text-gray-500 mb-2">
+                        Step {['region', 'ordering', 'style', 'season', 'summary'].indexOf(step) + 1} of 5: {
+                            step === 'region' ? 'Choose Regions' :
+                            step === 'ordering' ? 'Order Regions' :
+                            step === 'style' ? 'Travel Style' :
+                            step === 'season' ? 'Select Season' :
+                            'Review Journey'
+                        }
+                    </div>
+
+                    {/* Start Over Button */}
+                    {(selectedRegions.length > 0 || selectedStyles.length > 0 || selectedSeason || step !== 'region') && (
+                        <button
+                            onClick={() => {
+                                if (confirm('Are you sure you want to start over? This will clear all your selections.')) {
+                                    setSelectedRegions([]);
+                                    setSelectedStyles([]);
+                                    setSelectedSeason(null);
+                                    setStep('region');
+                                    clearFormState();
+                                }
+                            }}
+                            className="text-sm text-gray-400 hover:text-red-500 transition-colors underline"
+                        >
+                            Start Over
+                        </button>
+                    )}
                 </div>
 
                 <AnimatePresence mode="wait">
