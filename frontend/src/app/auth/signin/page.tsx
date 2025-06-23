@@ -95,6 +95,21 @@ export default function SignIn() {
 
                 {/* Sign in form */}
                 <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+                    {/* Development bypass button */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <button
+                            onClick={() => {
+                                // Temporary bypass for development
+                                document.cookie = 'next-auth.session-token=dev-bypass; path=/';
+                                router.push(callbackUrl);
+                            }}
+                            className="w-full flex items-center justify-center space-x-3 py-3 px-4 border border-orange-300 rounded-full text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors mb-4"
+                        >
+                            <span>🚧</span>
+                            <span>Development Bypass (Skip Auth)</span>
+                        </button>
+                    )}
+
                     {/* Google Sign In */}
                     <button
                         onClick={handleGoogleSignIn}

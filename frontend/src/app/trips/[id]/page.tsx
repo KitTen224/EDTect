@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import TimelineView from '@/components/TimelineView';
 import { SavedTrip } from '@/types/travel';
+import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Calendar, MapPin, Clock, Edit, Share, Trash2 } from 'lucide-react';
 
 export default function TripDetailPage() {
-    const { data: session, status } = useSession();
+    const { user, isLoading: authLoading, token } = useAuth();
     const router = useRouter();
     const params = useParams();
     const tripId = params.id as string;
@@ -21,33 +21,60 @@ export default function TripDetailPage() {
 
     const fetchTrip = useCallback(async () => {
         try {
-            const response = await fetch(`/api/trips/${tripId}`);
+            console.log('🔍 Fetching trip with ID:', tripId);
+            const response = await fetch(`/api/trips/${tripId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('📡 Response status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('📡 Response text:', responseText);
+            
             if (response.ok) {
-                const tripData = await response.json();
+                const tripData = JSON.parse(responseText);
+                console.log('✅ Trip data received:', {
+                    id: tripData.id,
+                    title: tripData.title,
+                    hasTimelineData: !!tripData.timeline_data
+                });
                 setTrip(tripData);
             } else if (response.status === 404) {
+                console.log('❌ Trip not found (404)');
                 setError('Trip not found');
             } else {
-                setError('Failed to load trip');
+                console.log('❌ Failed to load trip:', response.status);
+                let errorMessage = 'Failed to load trip';
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.error || errorMessage;
+                    console.error('❌ Server error details:', errorData);
+                } catch (e) {
+                    console.error('❌ Could not parse error response');
+                }
+                setError(errorMessage);
             }
         } catch (error) {
-            console.error('Error fetching trip:', error);
+            console.error('❌ Error fetching trip:', error);
             setError('Failed to load trip');
         } finally {
             setIsLoading(false);
         }
-    }, [tripId]);
+    }, [tripId, token]);
 
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/auth/signin?callbackUrl=/trips');
+        if (!authLoading && !user) {
+            router.push('/auth');
             return;
         }
 
-        if (status === 'authenticated' && tripId) {
+        if (user && token && tripId) {
             fetchTrip();
         }
-    }, [status, router, tripId, fetchTrip]);
+    }, [user, authLoading, token, router, tripId, fetchTrip]);
 
     const deleteTrip = async () => {
         if (!confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
@@ -58,6 +85,10 @@ export default function TripDetailPage() {
         try {
             const response = await fetch(`/api/trips/${tripId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (response.ok) {
@@ -92,6 +123,7 @@ export default function TripDetailPage() {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({ is_public: true }),
                 });
@@ -122,7 +154,7 @@ export default function TripDetailPage() {
         });
     };
 
-    if (status === 'loading' || isLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50">
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -136,7 +168,7 @@ export default function TripDetailPage() {
         );
     }
 
-    if (status === 'unauthenticated') {
+    if (!user) {
         return null; // Will redirect
     }
 
@@ -161,7 +193,7 @@ export default function TripDetailPage() {
         return null;
     }
 
-    const isOwner = session?.user?.id === trip.user_id;
+    const isOwner = user?.id === trip.user_id;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50">
@@ -236,7 +268,7 @@ export default function TripDetailPage() {
                         
                         <div className="flex items-center space-x-2 text-gray-600">
                             <MapPin className="w-5 h-5" />
-                            <span>{trip.regions.map(r => r.region.name).join(', ')}</span>
+                            <span>{trip.regions?.map(r => r.region.name).join(', ') || 'Japan'}</span>
                         </div>
                         
                         <div className="flex items-center space-x-2 text-gray-600">
@@ -246,7 +278,7 @@ export default function TripDetailPage() {
                     </div>
 
                     {/* Travel Styles */}
-                    {trip.travel_styles.length > 0 && (
+                    {trip.travel_styles && trip.travel_styles.length > 0 && (
                         <div className="mb-6">
                             <h3 className="text-sm font-medium text-gray-600 mb-2">Travel Styles:</h3>
                             <div className="flex flex-wrap gap-2">
@@ -275,23 +307,30 @@ export default function TripDetailPage() {
                 </motion.div>
 
                 {/* Timeline */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <TimelineView 
-                        timeline={trip.timeline_data}
-                        onTimelineUpdate={(updatedTimeline) => {
-                            if (isOwner) {
-                                // Auto-save changes if user is owner
-                                setTrip({ ...trip, timeline_data: updatedTimeline });
-                                // TODO: Implement auto-save functionality
-                            }
-                        }}
-                        readOnly={!isOwner}
-                    />
-                </motion.div>
+                {trip.timeline_data ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <TimelineView 
+                            timeline={trip.timeline_data}
+                            onTimelineUpdate={(updatedTimeline) => {
+                                if (isOwner) {
+                                    // Auto-save changes if user is owner
+                                    setTrip({ ...trip, timeline_data: updatedTimeline });
+                                    // TODO: Implement auto-save functionality
+                                }
+                            }}
+                        />
+                    </motion.div>
+                ) : (
+                    <div className="bg-white rounded-2xl p-8 text-center border border-gray-200">
+                        <div className="text-4xl mb-4">🗾</div>
+                        <h3 className="text-xl font-light text-gray-800 mb-2">Timeline Available Soon</h3>
+                        <p className="text-gray-600">This trip was saved with basic information. Timeline details are being processed.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

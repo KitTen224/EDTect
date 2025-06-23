@@ -140,7 +140,7 @@ export default function TimelineView({ timeline, onTimelineUpdate }: TimelineVie
         <DndProvider backend={HTML5Backend}>
             <div className="bg-gradient-to-br from-red-50 via-white to-pink-50">
                 {/* Enhanced Header with Better Stats */}
-                <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+                <div className="bg-white shadow-sm border-b border-gray-200 sticky top-16 z-10">
                     <div className="max-w-4xl mx-auto px-4 py-4">
                         <div className="flex items-center justify-between">
                             <div>

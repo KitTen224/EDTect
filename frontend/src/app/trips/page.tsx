@@ -1,34 +1,39 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/ui/Header';
 import { SavedTrip } from '@/types/travel';
+import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, MapPin, Clock, Trash2, Eye, Edit, Share } from 'lucide-react';
 
 export default function TripsPage() {
-    const { status } = useSession();
+    const { user, isLoading: authLoading, token } = useAuth();
     const router = useRouter();
     const [trips, setTrips] = useState<SavedTrip[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [deletingTrip, setDeletingTrip] = useState<string | null>(null);
 
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/auth/signin?callbackUrl=/trips');
+        if (!authLoading && !user) {
+            router.push('/auth');
             return;
         }
 
-        if (status === 'authenticated') {
+        if (user && token) {
             fetchTrips();
         }
-    }, [status, router]);
+    }, [user, authLoading, token, router]);
 
     const fetchTrips = async () => {
         try {
-            const response = await fetch('/api/trips');
+            const response = await fetch('/api/trips', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             if (response.ok) {
                 const data = await response.json();
                 setTrips(data.trips);
@@ -49,6 +54,10 @@ export default function TripsPage() {
         try {
             const response = await fetch(`/api/trips/${tripId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (response.ok) {
@@ -72,7 +81,7 @@ export default function TripsPage() {
         });
     };
 
-    if (status === 'loading' || isLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50">
                 <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -91,7 +100,7 @@ export default function TripsPage() {
         );
     }
 
-    if (status === 'unauthenticated') {
+    if (!user) {
         return null; // Will redirect
     }
 
@@ -144,11 +153,11 @@ export default function TripsPage() {
                                             )}
                                         </div>
                                         <div className="flex items-center space-x-1 ml-2">
-                                            {trip.travel_styles.slice(0, 2).map((style) => (
+                                            {trip.travel_styles?.slice(0, 2).map((style) => (
                                                 <span key={style.id} className="text-lg">
                                                     {style.icon}
                                                 </span>
-                                            ))}
+                                            )) || <span className="text-lg">🎌</span>}
                                         </div>
                                     </div>
 
@@ -162,7 +171,7 @@ export default function TripsPage() {
                                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                                             <MapPin className="w-4 h-4" />
                                             <span className="line-clamp-1">
-                                                {trip.regions.map(r => r.region.name).join(', ')}
+                                                {trip.regions?.map(r => r.region.name).join(', ') || 'Japan'}
                                             </span>
                                         </div>
 

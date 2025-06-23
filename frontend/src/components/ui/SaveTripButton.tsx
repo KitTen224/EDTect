@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { Save, Bookmark, Check } from 'lucide-react';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SaveTripButtonProps {
     formData: JapanTravelFormData;
@@ -13,22 +13,22 @@ interface SaveTripButtonProps {
 }
 
 export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonProps) {
-    const { data: session, status } = useSession();
+    const { user, isLoading: authLoading, token } = useAuth();
     const [isLoading, setSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [showTitleInput, setShowTitleInput] = useState(false);
     const [title, setTitle] = useState('');
 
-    if (status === 'loading') {
+    if (authLoading) {
         return (
             <div className="w-full h-12 bg-gray-200 rounded-full animate-pulse"></div>
         );
     }
 
-    if (!session) {
+    if (!user) {
         return (
             <button
-                onClick={() => window.location.href = '/auth/signin'}
+                onClick={() => window.location.href = '/auth'}
                 className="w-full flex items-center justify-center space-x-2 py-3 px-6 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors border border-red-200"
             >
                 <Bookmark className="w-5 h-5" />
@@ -42,25 +42,55 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
         
         setSaving(true);
         try {
+            console.log('🔄 Attempting to save trip...');
+            console.log('📝 Trip data:', {
+                title: title.trim(),
+                totalDuration: timeline.totalDuration,
+                regions: formData.regions.map(r => r.region.name),
+                user: !!user
+            });
+
+            const requestBody = {
+                title: title.trim(),
+                description: `${timeline.totalDuration}-day journey through ${formData.regions.map(r => r.region.name).join(', ')}`,
+                form_data: formData,
+                timeline_data: timeline,
+                is_public: false
+            };
+
+            console.log('📤 Request body prepared');
+
             const response = await fetch('/api/trips', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    title: title.trim(),
-                    description: `${timeline.totalDuration}-day journey through ${formData.regions.map(r => r.region.name).join(', ')}`,
-                    form_data: formData,
-                    timeline_data: timeline,
-                    is_public: false
-                }),
+                body: JSON.stringify(requestBody),
             });
 
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+            const responseText = await response.text();
+            console.log('📡 Response text:', responseText);
+
             if (!response.ok) {
-                throw new Error('Failed to save trip');
+                let errorMessage = 'Failed to save trip';
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.error || errorMessage;
+                    console.error('❌ Server error:', errorData);
+                } catch (e) {
+                    console.error('❌ Response parsing error:', e);
+                    console.error('❌ Raw response:', responseText);
+                }
+                throw new Error(`${errorMessage} (Status: ${response.status})`);
             }
 
-            const savedTrip = await response.json();
+            const savedTrip = JSON.parse(responseText);
+            console.log('✅ Trip saved successfully:', savedTrip.id);
+            
             setIsSaved(true);
             setShowTitleInput(false);
             onSaved?.(savedTrip.id);
@@ -71,8 +101,9 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
                 setTitle('');
             }, 3000);
         } catch (error) {
-            console.error('Error saving trip:', error);
-            alert('Failed to save trip. Please try again.');
+            console.error('❌ Save trip error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert(`Failed to save trip: ${errorMessage}`);
         } finally {
             setSaving(false);
         }

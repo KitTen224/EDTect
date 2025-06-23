@@ -4,9 +4,12 @@ import JapanTravelForm from '@/components/JapanTravelForm';
 import TimelineView from '@/components/TimelineView';
 import { Header } from '@/components/ui/Header';
 import { SaveTripButton } from '@/components/ui/SaveTripButton';
+import { AuthDebug } from '@/components/AuthDebug';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
 
 export default function Home() {
+    const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [tripData, setTripData] = useState<JapanTravelFormData | null>(null);
     const [itinerary, setItinerary] = useState<string | null>(null);
@@ -149,14 +152,14 @@ export default function Home() {
                 {/* Trip Summary */}
                 <div className="max-w-2xl mx-auto bg-white rounded-2xl p-8 shadow-lg border border-gray-200 mb-8">
                     <h2 className="text-2xl font-light text-gray-800 mb-6 text-center">
-                        Your Japan Journey
+                        {t('result.yourJourney')}
                     </h2>
                     
                     <div className="space-y-6">
                         {/* Multiple Regions Display */}
                         <div>
                             <h3 className="font-medium text-gray-800 mb-3">
-                                Your Journey ({tripData.totalDuration} days total):
+                                {t('result.yourJourney')} ({tripData.totalDuration} {t('common.days')} {t('result.total')}):
                             </h3>
                             <div className="space-y-3">
                                 {tripData.regions.map((regionWithDays) => (
@@ -173,7 +176,7 @@ export default function Home() {
                                             </div>
                                         </div>
                                         <span className="font-medium text-red-600">
-                                            {regionWithDays.days} day{regionWithDays.days !== 1 ? 's' : ''}
+                                            {regionWithDays.days} {regionWithDays.days === 1 ? t('common.day') : t('common.days')}
                                         </span>
                                     </div>
                                 ))}
@@ -215,10 +218,10 @@ export default function Home() {
                             <div className="w-16 h-16 mx-auto border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                             <div>
                                 <h3 className="text-xl font-light text-gray-800 mb-2">
-                                    Crafting your perfect Japan experience...
+                                    {t('result.craftingExperience')}
                                 </h3>
                                 <p className="text-gray-600">
-                                    Considering local culture, seasonal highlights, and your preferences
+                                    {t('result.consideringDetails')}
                                 </p>
                             </div>
                         </div>
@@ -248,7 +251,7 @@ export default function Home() {
                                         }}
                                         className="w-full px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                     >
-                                        Try Again
+                                        {t('common.tryAgain')}
                                     </button>
                                     <button 
                                         onClick={() => {
@@ -263,7 +266,7 @@ export default function Home() {
                                         }}
                                         className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
                                     >
-                                        Start Over
+                                        {t('common.startOver')}
                                     </button>
                                 </div>
                             </div>
@@ -273,7 +276,7 @@ export default function Home() {
                             <div className="text-6xl mb-4">🌸</div>
                             <div>
                                 <h3 className="text-2xl font-light text-gray-800 mb-4">
-                                    Your Japan Itinerary is Ready!
+                                    {t('result.itineraryReady')}
                                 </h3>
                                 
                                 {timeline ? (
@@ -365,7 +368,7 @@ export default function Home() {
                                             }}
                                             className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
                                         >
-                                            Plan Another Journey
+                                            {t('common.startOver')}
                                         </button>
                                     </div>
                                 </div>
@@ -376,16 +379,17 @@ export default function Home() {
                             <div className="text-6xl">🎌</div>
                             <div>
                                 <h3 className="text-xl font-light text-gray-800 mb-2">
-                                    Ready to explore Japan!
+                                    {t('result.readyToExplore')}
                                 </h3>
                                 <p className="text-gray-600">
-                                    Your journey details look perfect
+                                    {t('result.journeyDetailsLookPerfect')}
                                 </p>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
+            <AuthDebug />
         </div>
     );
 }

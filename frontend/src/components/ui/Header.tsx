@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { AuthButton } from './AuthButton';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
     title?: string;
@@ -10,15 +12,17 @@ interface HeaderProps {
 }
 
 export function Header({ 
-    title = '日本 Journey', 
-    subtitle = 'Discover the beauty of Japan, tailored to your journey',
+    title, 
+    subtitle,
     showAuth = true 
 }: HeaderProps) {
+    const { t } = useLanguage();
+    const router = useRouter();
     return (
         <div className="relative">
             {/* Auth Button - positioned absolute in top right */}
             {showAuth && (
-                <div className="absolute top-0 right-0">
+                <div className="absolute top-0 right-0 z-50">
                     <AuthButton />
                 </div>
             )}
@@ -29,11 +33,18 @@ export function Header({
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center mb-12"
             >
-                <h1 className="text-4xl md:text-6xl font-light text-gray-800 mb-4">
-                    <span className="text-red-600">日</span>本 Journey
+                <h1 
+                    onClick={() => router.push('/')}
+                    className="text-4xl md:text-6xl font-light text-gray-800 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    {title || (
+                        <>
+                            <span className="text-red-600">日</span>本 Journey
+                        </>
+                    )}
                 </h1>
                 <p className="text-lg text-gray-600 font-light">
-                    {subtitle}
+                    {subtitle ? subtitle : t('app.subtitle')}
                 </p>
             </motion.div>
         </div>

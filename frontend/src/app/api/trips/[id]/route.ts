@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { supabaseServer } from '@/lib/supabase';
 import { UpdateTripRequest } from '@/types/travel';
+import jwt from 'jsonwebtoken';
 
 interface RouteParams {
     params: {
@@ -10,43 +9,88 @@ interface RouteParams {
     };
 }
 
+// Helper function to get user from token
+async function getUserFromToken(request: NextRequest) {
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'fallback-secret') as { userId: string };
+        return { id: decoded.userId };
+    } catch (error) {
+        return null;
+    }
+}
+
 // GET /api/trips/[id] - Get a specific trip
 export async function GET(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await getServerSession(authOptions);
+        console.log('🔍 GET /api/trips/[id] called with ID:', params.id);
         
-        if (!session?.user?.id) {
+        // Get user from JWT token
+        const user = await getUserFromToken(request);
+        
+        if (!user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        
+        console.log('👤 Using authenticated user:', user.id);
 
+        console.log('🗄️ Querying database for trip ID:', params.id);
+        
+        // Simplified query that works with our basic table structure
         const { data: trip, error } = await supabaseServer
             .from('saved_trips')
             .select('*')
             .eq('id', params.id)
-            .or(`user_id.eq.${session.user.id},is_public.eq.true`)
+            .eq('user_id', user.id) // Only get user's own trips for now
             .single();
 
         if (error) {
+            console.error('❌ Database error:', error);
             if (error.code === 'PGRST116') {
                 return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
             }
-            console.error('Error fetching trip:', error);
-            return NextResponse.json({ error: 'Failed to fetch trip' }, { status: 500 });
+            return NextResponse.json({ 
+                error: 'Failed to fetch trip',
+                details: error.message,
+                code: error.code
+            }, { status: 500 });
         }
+
+        if (!trip) {
+            console.log('❌ No trip found with ID:', params.id);
+            return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
+        }
+
+        console.log('✅ Trip found:', {
+            id: trip.id,
+            title: trip.title,
+            hasTimelineData: !!trip.timeline_data
+        });
 
         return NextResponse.json(trip);
     } catch (error) {
-        console.error('Error in GET /api/trips/[id]:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('❌ Error in GET /api/trips/[id]:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ 
+            error: 'Internal server error',
+            details: errorMessage
+        }, { status: 500 });
     }
 }
 
 // PUT /api/trips/[id] - Update a trip
 export async function PUT(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await getServerSession(authOptions);
+        // Get user from JWT token
+        const user = await getUserFromToken(request);
         
-        if (!session?.user?.id) {
+        if (!user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -55,7 +99,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // Check if user owns the trip
         const { data: existingTrip, error: checkError } = await supabaseServer
             .from('saved_trips')
-            .select('user_id')
+            .select('user_id, share_token')
             .eq('id', params.id)
             .single();
 
@@ -63,7 +107,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
         }
 
-        if (existingTrip.user_id !== session.user.id) {
+        if (existingTrip.user_id !== user.id) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -114,9 +158,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/trips/[id] - Delete a trip
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await getServerSession(authOptions);
+        // Get user from JWT token
+        const user = await getUserFromToken(request);
         
-        if (!session?.user?.id) {
+        if (!user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -125,7 +170,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             .from('saved_trips')
             .delete()
             .eq('id', params.id)
-            .eq('user_id', session.user.id);
+            .eq('user_id', user.id);
 
         if (error) {
             console.error('Error deleting trip:', error);

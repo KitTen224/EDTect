@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JapanTravelFormData, JapanRegion, JapanTravelStyle, JapanSeason, RegionWithDays } from '@/types/travel';
 import { Header } from './ui/Header';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Japan regions data
 const japanRegions: JapanRegion[] = [
@@ -141,6 +142,7 @@ interface JapanTravelFormProps {
 }
 
 export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTravelFormProps) {
+    const { t } = useLanguage();
     const [selectedRegions, setSelectedRegions] = useState<RegionWithDays[]>([]);
     const [selectedStyles, setSelectedStyles] = useState<JapanTravelStyle[]>([]);
     const [selectedSeason, setSelectedSeason] = useState<JapanSeason | null>(null);
@@ -271,12 +273,12 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                     
                     {/* Step Labels */}
                     <div className="text-sm text-gray-500 mb-2">
-                        Step {['region', 'ordering', 'style', 'season', 'summary'].indexOf(step) + 1} of 5: {
-                            step === 'region' ? 'Choose Regions' :
-                            step === 'ordering' ? 'Order Regions' :
-                            step === 'style' ? 'Travel Style' :
-                            step === 'season' ? 'Select Season' :
-                            'Review Journey'
+                        {t('form.step')} {['region', 'ordering', 'style', 'season', 'summary'].indexOf(step) + 1} {t('form.of')} 5: {
+                            step === 'region' ? t('form.selectRegions') :
+                            step === 'ordering' ? t('form.orderRegions') :
+                            step === 'style' ? t('form.travelStyles') :
+                            step === 'season' ? t('form.season') :
+                            t('form.duration')
                         }
                     </div>
 
@@ -284,7 +286,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                     {(selectedRegions.length > 0 || selectedStyles.length > 0 || selectedSeason || step !== 'region') && (
                         <button
                             onClick={() => {
-                                if (confirm('Are you sure you want to start over? This will clear all your selections.')) {
+                                if (confirm(t('common.confirmStartOver'))) {
                                     setSelectedRegions([]);
                                     setSelectedStyles([]);
                                     setSelectedSeason(null);
@@ -294,7 +296,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                             }}
                             className="text-sm text-gray-400 hover:text-red-500 transition-colors underline"
                         >
-                            Start Over
+                            {t('common.startOver')}
                         </button>
                     )}
                 </div>
@@ -311,13 +313,13 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center mb-8">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    Which regions do you want to explore?
+                                    {t('form.step1.title')}
                                 </h2>
                                 <p className="text-gray-600">
-                                    Select multiple regions for your journey (max 7 days total)
+                                    {t('form.step1.subtitle')}
                                 </p>
                                 <div className="mt-3 text-sm text-gray-500">
-                                    Total days: <span className="font-medium text-red-600">{totalDays}/{maxDays}</span>
+                                    {t('form.totalDays')}: <span className="font-medium text-red-600">{totalDays}/{maxDays}</span>
                                 </div>
                             </div>
 
@@ -371,7 +373,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                 >
                                     <div className="text-center">
                                         <h3 className="text-lg font-medium text-gray-800 mb-4">
-                                            How many days in each region?
+                                            {t('form.daysInEachRegion')}
                                         </h3>
                                     </div>
 
@@ -440,7 +442,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                             }`}
                                         >
-                                            Continue to Order Regions
+                                            {t('form.continue')}
                                         </button>
                                     </div>
                                 </motion.div>
@@ -459,10 +461,10 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    Choose your journey order
+                                    {t('form.orderStep.title')}
                                 </h2>
                                 <p className="text-gray-600">
-                                    Which region would you like to visit first?
+                                    {t('form.orderStep.subtitle')}
                                 </p>
                             </div>
 
@@ -499,7 +501,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                                         </p>
                                                         {index === 0 && (
                                                             <p className="text-xs text-yellow-600 font-medium mt-1">
-                                                                🌟 Start here
+                                                                🌟 {t('form.startHere')}
                                                             </p>
                                                         )}
                                                     </div>
@@ -567,13 +569,13 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     onClick={() => setStep('region')}
                                     className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                                 >
-                                    Back
+                                    {t('form.back')}
                                 </button>
                                 <button
                                     onClick={() => setStep('style')}
                                     className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
                                 >
-                                    Continue to Travel Style
+                                    {t('form.continue')}
                                 </button>
                             </div>
                         </motion.div>
@@ -590,12 +592,12 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    What are your travel styles?
+                                    {t('form.step2.title')}
                                 </h2>
-                                <p className="text-gray-600">Select multiple styles that resonate with your spirit</p>
+                                <p className="text-gray-600">{t('form.step2.subtitle')}</p>
                                 {selectedStyles.length > 0 && (
                                     <p className="text-sm text-red-600 mt-2">
-                                        {selectedStyles.length} style{selectedStyles.length !== 1 ? 's' : ''} selected
+                                        {selectedStyles.length} {selectedStyles.length !== 1 ? t('form.stylesSelected') : t('form.styleSelected')}
                                     </p>
                                 )}
                             </div>
@@ -645,7 +647,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     onClick={() => setStep('season')}
                                     className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
                                 >
-                                    Continue to Season
+                                    {t('form.continue')}
                                 </button>
                             </div>
                         </motion.div>
@@ -662,9 +664,9 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    When will you visit?
+                                    {t('form.step3.title')}
                                 </h2>
-                                <p className="text-gray-600">Each season offers unique beauty</p>
+                                <p className="text-gray-600">{t('form.step3.subtitle')}</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -703,7 +705,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     onClick={() => setStep('summary')}
                                     className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
                                 >
-                                    Review Journey
+                                    {t('result.reviewJourney')}
                                 </button>
                             </div>
                         </motion.div>
@@ -720,9 +722,9 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    Your Japan Journey
+                                    {t('form.summary.title')}
                                 </h2>
-                                <p className="text-gray-600">Ready to create your perfect itinerary?</p>
+                                <p className="text-gray-600">{t('form.summary.subtitle')}</p>
                             </div>
 
                             <div className="max-w-2xl mx-auto bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -730,7 +732,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     {/* Multiple Regions Display */}
                                     <div>
                                         <h3 className="font-medium text-gray-800 mb-3">
-                                            Regions & Duration ({totalDays} days total):
+                                            {t('form.summary.regionsAndDuration')} ({totalDays} {t('common.days')} {t('result.total')}):
                                         </h3>
                                         <div className="space-y-3">
                                             {selectedRegions.map((regionWithDays) => (
@@ -747,7 +749,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                                         </div>
                                                     </div>
                                                     <span className="font-medium text-red-600">
-                                                        {regionWithDays.days} day{regionWithDays.days !== 1 ? 's' : ''}
+                                                        {regionWithDays.days} {regionWithDays.days !== 1 ? t('common.days') : t('common.day')}
                                                     </span>
                                                 </div>
                                             ))}
@@ -758,7 +760,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     <div className="space-y-4">
                                         {selectedStyles.length > 0 && (
                                             <div>
-                                                <h4 className="text-sm font-medium text-gray-600 mb-2">Travel Styles:</h4>
+                                                <h4 className="text-sm font-medium text-gray-600 mb-2">{t('form.summary.travelStyles')}:</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {selectedStyles.map((style) => (
                                                         <span 
@@ -774,7 +776,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                         )}
                                         {selectedSeason && (
                                             <div className="flex items-center justify-between">
-                                                <span className="text-gray-600">Season:</span>
+                                                <span className="text-gray-600">{t('form.summary.season')}:</span>
                                                 <span className="font-medium">{selectedSeason.name} ({selectedSeason.nameJapanese})</span>
                                             </div>
                                         )}
@@ -787,7 +789,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     onClick={() => setStep('season')}
                                     className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                                 >
-                                    Back
+                                    {t('form.back')}
                                 </button>
                                 <button
                                     onClick={handleSubmit}
@@ -801,12 +803,12 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                     {isLoading ? (
                                         <span className="flex items-center space-x-2">
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            <span>Creating Your Journey...</span>
+                                            <span>{t('form.planningJourney')}</span>
                                         </span>
                                     ) : (
                                         <span className="flex items-center space-x-2">
                                             <span>🌸</span>
-                                            <span>Create My Japan Journey</span>
+                                            <span>{t('form.planJourney')}</span>
                                         </span>
                                     )}
                                 </button>
