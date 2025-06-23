@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { AuthButton } from './AuthButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
+import { AdminLink } from './AdminLink';
 
 interface HeaderProps {
     title?: string;
@@ -22,7 +23,8 @@ export function Header({
         <div className="relative">
             {/* Auth Button - positioned absolute in top right */}
             {showAuth && (
-                <div className="absolute top-0 right-0 z-50">
+                <div className="absolute top-0 right-0 z-50 flex items-center gap-2">
+                    <AdminLink />
                     <AuthButton />
                 </div>
             )}
