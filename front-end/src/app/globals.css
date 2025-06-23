@@ -1,0 +1,318 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --background: #ffffff;
+    --foreground: #171717;
+}
+
+:root {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-inter);
+    --font-mono: var(--font-jetbrains-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
+}
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    color: gray;
+}
+
+/* ===== SLIDER WITH FILL EFFECT ===== */
+
+/* Modern browsers - uses accent-color for automatic fill */
+.slider-with-fill {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    outline: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Modern accent-color property - creates automatic fill! */
+    accent-color: #3b82f6;
+}
+
+/* Webkit track styling */
+.slider-with-fill::-webkit-slider-track {
+    -webkit-appearance: none;
+    background: #e5e7eb;
+    height: 8px;
+    border-radius: 6px;
+}
+
+/* Webkit thumb styling */
+.slider-with-fill::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.slider-with-fill::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    background: #2563eb;
+}
+
+.slider-with-fill::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+    background: #1d4ed8;
+}
+
+/* Firefox track and thumb */
+.slider-with-fill::-moz-range-track {
+    background: #e5e7eb;
+    height: 8px;
+    border-radius: 6px;
+    border: none;
+}
+
+.slider-with-fill::-moz-range-progress {
+    background: #3b82f6;
+    height: 8px;
+    border-radius: 6px;
+}
+
+.slider-with-fill::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.slider-with-fill::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    background: #2563eb;
+}
+
+/* Hover effect for the track */
+.slider-with-fill:hover {
+    background: #d1d5db;
+}
+
+.slider-with-fill:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== ALTERNATIVE: ENHANCED SLIDER WITH CSS CUSTOM FILL ===== */
+
+/* Container for custom fill effect */
+.slider-container {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* Background track */
+.slider-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+/* Progress fill that will be updated via JavaScript */
+.slider-fill {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 8px;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 6px;
+    transition: width 0.1s ease;
+    width: 0%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+/* Slider that sits on top */
+.slider-custom {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 20px;
+    background: transparent;
+    outline: none;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+.slider-custom::-webkit-slider-track {
+    -webkit-appearance: none;
+    background: transparent;
+    height: 8px;
+    border-radius: 6px;
+}
+
+.slider-custom::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 3;
+}
+
+.slider-custom::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+    background: #2563eb;
+}
+
+.slider-custom::-moz-range-track {
+    background: transparent;
+    height: 8px;
+    border-radius: 6px;
+    border: none;
+}
+
+.slider-custom::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.slider-custom::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+    background: #2563eb;
+}
+
+/* ===== FALLBACK: SIMPLE SLIDER (if others don't work) ===== */
+.slider-simple {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    outline: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.slider-simple::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.slider-simple::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    background: #2563eb;
+}
+
+.slider-simple::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.slider-simple::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    background: #2563eb;
+}
+
+.slider-simple:hover {
+    background: #d1d5db;
+}
+
+/* ===== GOOGLE PLACES AUTOCOMPLETE STYLING ===== */
+/* Simple, default autocomplete styling */
+.pac-container {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    z-index: 1000;
+}
+
+.pac-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+    background-color: #f0f0f0;
+}
+
+.pac-item-query {
+    color: #000;
+}
+
+.pac-matched {
+    font-weight: bold;
+}
+
+.pac-icon {
+    display: none;
+}
