@@ -6,6 +6,8 @@ import { Header } from '@/components/ui/Header';
 import { SaveTripButton } from '@/components/ui/SaveTripButton';
 import { AuthDebug } from '@/components/AuthDebug';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ChatAI from '@/components/ChatAI';
+import SimpleChat from '@/components/SimpleChat';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
 
 export default function Home() {
@@ -17,6 +19,15 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [showRawOutput, setShowRawOutput] = useState(false);
     const [lastPrompt, setLastPrompt] = useState<string | null>(null);
+    const [showChat, setShowChat] = useState(false);
+    const handlePlanUpdateFromAI = (newPlan: any) => {
+        // Update timeline with new plan from AI
+        if (newPlan && newPlan.timeline) {
+            setTimeline(newPlan.timeline);
+        }
+        // You can also update other related states here
+        console.log('🤖 Plan updated from AI:', newPlan);
+    };
 
     const handleJapanTravelFormSubmit = async (data: JapanTravelFormData) => {
         console.log('🇯🇵 Japan journey submitted:', data);
@@ -134,10 +145,56 @@ export default function Home() {
 
     if (!tripData) {
         return (
-            <JapanTravelForm
-                onSubmit={handleJapanTravelFormSubmit}
-                isLoading={isLoading}
-            />
+            <div>Add commentMore actions
+                <JapanTravelForm
+                    onSubmit={handleJapanTravelFormSubmit}
+                    isLoading={isLoading}
+                />
+                
+                {/* Chat AI Button for Form Page */}
+                <div
+                    style={{
+                        position: 'fixed',
+                        bottom: '30px',
+                        right: '30px',
+                        zIndex: 999999,
+                        backgroundColor: '#dc2626',
+                        color: 'white',
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '40px',
+                        cursor: 'pointer',
+                        border: '4px solid white',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.5)',
+                        transition: 'all 0.3s ease'
+                    }}                    onClick={() => {
+                        setShowChat(true);
+                        console.log('🤖 Chat AI button clicked on form page!');
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                        e.currentTarget.style.backgroundColor = '#b91c1c';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.backgroundColor = '#dc2626';
+                    }}
+                    title="AIチャットを開く"                >
+                    💬
+                </div>
+                
+                {/* Chat Interface for Form Page */}
+                {showChat && (
+                    <SimpleChat 
+                        currentPlan={null}
+                        onClose={() => setShowChat(false)}
+                    />
+                )}
+            </div>
         );
     }
 
@@ -390,6 +447,41 @@ export default function Home() {
                 </div>
             </div>
             <AuthDebug />
+            <div
+                style={{
+                    position: 'fixed',
+                    bottom: '30px',
+                    right: '30px',
+                    zIndex: 999999,
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '40px',
+                    cursor: 'pointer',
+                    border: '4px solid white',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.5)'
+                }}                onClick={() => {
+                    setShowChat(true);
+                    console.log('🤖 Chat AI button clicked!');
+                }}
+                title="AIチャットを開く"            >
+                💬
+            </div>
+            
+            {/* Chat Interface */}
+            {showChat && (
+                <SimpleChat 
+                    currentPlan={timeline}
+                    onClose={() => setShowChat(false)}
+                />
+            )}
+        
         </div>
+        
     );
 }

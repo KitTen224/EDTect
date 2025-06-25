@@ -14,6 +14,8 @@ class Place extends Model
     protected $fillable = [
         'owner_id',
         'name',
+        'tags',
+        'genre_name',
         'description',
         'address',
         'latitude',
