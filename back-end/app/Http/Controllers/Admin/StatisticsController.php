@@ -16,12 +16,29 @@ class StatisticsController extends Controller
     public function index()
     {
         // Phân loại dựa trên tags hoặc genre_name
-        $totalRestaurants = Place::whereNotNull('genre_name')->count();
-        $totalHotels = Place::whereJsonContains('tags', 'accommodation')->count();
+        // Khách sạn: nơi có tag liên quan đến "accommodation"
+        $totalHotels = Place::where(function ($q) {
+            $q->whereJsonContains('tags', 'accommodation')
+            ->orWhere('genre_name','accommodation');
+        })->count();
+
+        // Nhà hàng: tag liên quan đến food hoặc catering
+        $totalRestaurants = Place::where(function ($q) {
+            $q->whereJsonContains('tags', 'catering')
+            ->orWhereJsonContains('tags', 'meal')
+            ->orWhere('genre_name','meal')
+            ->orWhere('genre_name', 'like', '%居酒屋%')
+            ->orWhere('genre_name', 'like', '%中華%');
+        })->count();
+
+        // Điểm tham quan: tag liên quan đến tourism hoặc attraction
         $totalPlaces = Place::where(function ($q) {
-            $q->whereJsonContains('tags', 'parking')
-              ->orWhereJsonContains('tags', 'sightseeing')
-              ->orWhere('tags', 'like', '%観光%');
+            $q->whereJsonContains('tags', 'tourism')
+            ->orWhereJsonContains('tags', 'tourism.attraction')
+            ->orWhereJsonContains('tags', 'tourism.sights')
+            ->orWhereJsonContains('tags', 'leisure')
+            ->orWhere('genre_name','attraction')
+            ->orWhere('genre_name','experience');
         })->count();
 
         // Reviews

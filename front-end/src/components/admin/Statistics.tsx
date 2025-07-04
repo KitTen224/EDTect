@@ -34,7 +34,7 @@ export default function Statistics() {
     const fetchStatistics = async () => {
         try {
             const response = await fetch('http://localhost:8000/api/admin/statistics', {
-                 method: 'GET',
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json',
                     // 'Authorization': `Bearer ${getAuthToken()}`,

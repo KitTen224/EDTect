@@ -27,16 +27,16 @@ class DatabaseSeeder extends Seeder
             HotelSeeder::class,
             TourisSeeder::class,
             PlaceCategorySeeder::class,
-            ReviewsSeeder::class,
-            BookingsSeeder::class,
-            BookingDetailsSeeder::class,
+            //ReviewsSeeder::class,
+            //BookingsSeeder::class,
+            //BookingDetailsSeeder::class,
             ItinerariesSeeder::class,
             ItineraryPlacesSeeder::class,
-            FavoritesSeeder::class,
+            //FavoritesSeeder::class,
             // EventSeeder::class, //error
-            AiInteractionLogsSeeder::class,
-            AiSuggestionsSeeder::class,
-            AiUserProfilesSeeder::class,
+            //AiInteractionLogsSeeder::class,
+            //AiSuggestionsSeeder::class,
+            //AiUserProfilesSeeder::class,
         ]);
 
     }

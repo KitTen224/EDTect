@@ -134,8 +134,33 @@ RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-      
-      console.log('✅ Gemini API success, generated', text.length, 'characters');
+      //laravel
+      const rawText = response.text();
+
+      const cleanedText = rawText.replace(/```(json)?/g, '').trim();
+      console.log("👉 Cleaned Gemini output:", cleanedText);
+
+      let parsed;
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch (e: any) {
+        console.error("❌ Failed to parse JSON from Gemini:", e.message);
+        throw new Error("Gemini output is not valid JSON. Check format.");
+      }
+
+      console.log("👉 Fetching Laravel API with days:", parsed.days);
+
+      await fetch('http://localhost:8000/api/ai/save-itinerary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 1,
+          title: `AI Japan Itinerary (${new Date().toLocaleDateString()})`,
+          description: "Generated from AI",
+          days: parsed.days,
+        })
+      });
+      //----
       return NextResponse.json({ 
         itinerary: text,
         prompt: prompt 

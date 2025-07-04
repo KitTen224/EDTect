@@ -35,7 +35,7 @@ class HotelSeeder extends Seeder
                     ->get('https://api.geoapify.com/v2/places', [
                 'categories' => 'accommodation.hotel',
                 'filter' => "rect:{$reg['lon_min']},{$reg['lat_min']},{$reg['lon_max']},{$reg['lat_max']}",
-                'limit' => 100,
+                'limit' => 10,
                 'apiKey' => $apiKey,
                 'format' => 'json',
             ]);

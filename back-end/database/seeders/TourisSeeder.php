@@ -44,7 +44,7 @@ class TourisSeeder extends Seeder
                     ->get('https://api.geoapify.com/v2/places', [
                     'categories' => $category,
                     'filter' => "rect:{$region['lon_min']},{$region['lat_min']},{$region['lon_max']},{$region['lat_max']}",
-                    'limit' => 100,
+                    'limit' => 10,
                     'apiKey' => $apiKey,
                     'format' => 'json',
                 ]);
