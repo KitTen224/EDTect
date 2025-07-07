@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import Cookies from 'js-cookie';
 
 interface FormData {
   name: string;
@@ -33,22 +34,24 @@ export default function CustomAuth() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password) {
-      setError('Please fill in all required fields');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!formData.email.trim()) {
+      setError('Email is required');
       return false;
     }
 
-    if (!isLogin && !formData.name) {
-      setError('Please enter your name');
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
       return false;
     }
 
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (!formData.password) {
+      setError('Password is required');
       return false;
     }
 
@@ -57,57 +60,108 @@ export default function CustomAuth() {
       return false;
     }
 
+    if (!isLogin) {
+      if (!formData.name.trim()) {
+        setError('Name is required');
+        return false;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return false;
+      }
+    }
+
     return true;
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsLoading(true);
-    setError('');
+  setIsLoading(true);
+  setError('');
+try {
+  // Always get CSRF cookie first for Sanctum
+  await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+    credentials: 'include',
+  });
 
-    try {
-      if (isLogin) {
-        // Use AuthContext login method for login
-        const success = await login(formData.email, formData.password);
-        if (success) {
-          setSuccess('Login successful! Redirecting...');
-          setTimeout(() => router.push('/'), 1000);
-        } else {
-          setError('Invalid email or password');
-        }
-      } else {
-        // Handle registration
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-          }),
-        });
+  const csrfToken = Cookies.get('XSRF-TOKEN');
+  console.log('csrfToken:', csrfToken);
 
-        const data = await response.json();
+  let response;
 
-        if (response.ok) {
-          setSuccess('Account created successfully! You can now sign in.');
-          setIsLogin(true);
-          setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-        } else {
-          setError(data.error || 'Something went wrong');
-        }
-      }
-    } catch (error) {
-      setError('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
+  if (isLogin) {
+    // LOGIN
+    response = await fetch('http://localhost:8000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-XSRF-TOKEN': csrfToken, // ✅ This fixes CSRF mismatch!
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+      credentials: 'include',
+    });
+  } else {
+      // REGISTER
+      const csrfToken = (document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN=')) || '').split('=')[1];
+      response = await fetch('http://localhost:8000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-XSRF-TOKEN': decodeURIComponent(csrfToken || ''),
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+        }),
+        credentials: 'include',
+      });
     }
-  };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          data.errors?.email?.[0] ||
+          data.errors?.password?.[0] ||
+          'Authentication failed'
+      );
+    }
+
+    if (isLogin) {
+      setSuccess('Login successful! Redirecting...');
+      login(data.access_token, data.user);
+      setTimeout(() => router.push('/'), 1500);
+     setTimeout(() => router.push('/profile'), 1000);
+
+
+
+    } else {
+      setSuccess('Account created! You can now sign in.');
+      setTimeout(() => {
+        setIsLogin(true);
+        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+      }, 1500);
+    }
+  } catch (err: any) {
+    console.error(err);
+    setError(err.message || 'Something went wrong.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  // ... [rest of your component code remains the same]
 
   const toggleMode = () => {
     setIsLogin(!isLogin);

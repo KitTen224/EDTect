@@ -1,34 +1,63 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    | Recommended production settings commented out
+    | Use these for development and adjust for production
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => [
+        'api/*',
+        'sanctum/csrf-cookie',
+        'login',
+        'logout',
+        'register',
+        'forgot-password',
+        'reset-password'
+    ],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => [
+        'POST',
+        'GET',
+        'OPTIONS',
+        'PUT',
+        'PATCH',
+        'DELETE'
+    ],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        // 'https://yourproductiondomain.com'
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        // For dynamic subdomains if needed
+        // 'https?://(.+\.)?yourdomain\.com'
+    ],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Origin',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN'
+    ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Authorization',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN'
+    ],
 
-    'max_age' => 0,
+    'max_age' => 60 * 60 * 24, // 24 hours
 
-    'supports_credentials' => false,
-
+    'supports_credentials' => true,
 ];

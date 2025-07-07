@@ -12,7 +12,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (token: string, user: User) => void; // ✅ just stores
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -25,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
@@ -41,35 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('token');
       }
     }
-    
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUser(data.user);
-        setToken(data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
-        return true;
-      } else {
-        throw new Error(data.error || 'Login failed');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
+  const login = (token: string, user: User) => {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', token);
   };
 
   const logout = () => {
