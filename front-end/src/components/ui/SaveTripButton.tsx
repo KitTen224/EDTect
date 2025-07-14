@@ -1,5 +1,5 @@
 'use client';
-
+import Cookies from 'js-cookie';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Bookmark, Check } from 'lucide-react';
@@ -20,9 +20,7 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
     const [title, setTitle] = useState('');
 
     if (authLoading) {
-        return (
-            <div className="w-full h-12 bg-gray-200 rounded-full animate-pulse"></div>
-        );
+        return <div className="w-full h-12 bg-gray-200 rounded-full animate-pulse"></div>;
     }
 
     if (!user) {
@@ -36,78 +34,72 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
             </button>
         );
     }
+const handleSave = async () => {
+  if (!title.trim()) return;
 
-    const handleSave = async () => {
-        if (!title.trim()) return;
-        
-        setSaving(true);
-        try {
-            console.log('🔄 Attempting to save trip...');
-            console.log('📝 Trip data:', {
-                title: title.trim(),
-                totalDuration: timeline.totalDuration,
-                regions: formData.regions.map(r => r.region.name),
-                user: !!user
-            });
-
-            const requestBody = {
-                title: title.trim(),
-                description: `${timeline.totalDuration}-day journey through ${formData.regions.map(r => r.region.name).join(', ')}`,
-                form_data: formData,
-                timeline_data: timeline,
-                is_public: false
-            };
-
-            console.log('📤 Request body prepared');
-
-            const response = await fetch('/api/trips', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            console.log('📡 Response status:', response.status);
-            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
-            const responseText = await response.text();
-            console.log('📡 Response text:', responseText);
-
-            if (!response.ok) {
-                let errorMessage = 'Failed to save trip';
-                try {
-                    const errorData = JSON.parse(responseText);
-                    errorMessage = errorData.error || errorMessage;
-                    console.error('❌ Server error:', errorData);
-                } catch (e) {
-                    console.error('❌ Response parsing error:', e);
-                    console.error('❌ Raw response:', responseText);
-                }
-                throw new Error(`${errorMessage} (Status: ${response.status})`);
-            }
-
-            const savedTrip = JSON.parse(responseText);
-            console.log('✅ Trip saved successfully:', savedTrip.id);
-            
-            setIsSaved(true);
-            setShowTitleInput(false);
-            onSaved?.(savedTrip.id);
-            
-            // Reset after showing success
-            setTimeout(() => {
-                setIsSaved(false);
-                setTitle('');
-            }, 3000);
-        } catch (error) {
-            console.error('❌ Save trip error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            alert(`Failed to save trip: ${errorMessage}`);
-        } finally {
-            setSaving(false);
-        }
+  setSaving(true);
+  try {
+    const requestBody = {
+      title: title.trim(),
+      description: `${timeline.totalDuration}-day journey through ${formData.regions.map(r => r.region.name).join(', ')}`,
+      form_data: formData,
+      timeline_data: timeline,
+      total_duration: timeline.totalDuration,
     };
+
+    // ✅ Get CSRF token first
+    await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+      credentials: 'include',
+    });
+
+    const xsrfToken = Cookies.get('XSRF-TOKEN');
+
+
+   const response = await fetch('http://localhost:8000/api/trips', {
+  method: 'POST',
+  credentials: 'include',        // send the Laravel session cookie
+  headers: {
+    'Content-Type': 'application/json',
+    "Accept": "application/json",  
+    'X-XSRF-TOKEN': xsrfToken || '',
+  },
+  body: JSON.stringify(requestBody),
+});
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to save trip';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.error || errorMessage;
+        console.error('❌ Server error:', errorData);
+      } catch (e) {
+        console.error('❌ Response parsing error:', e);
+        console.error('❌ Raw response:', responseText);
+      }
+      throw new Error(`${errorMessage} (Status: ${response.status})`);
+    }
+
+    const savedTrip = JSON.parse(responseText);
+    console.log('✅ Trip saved successfully:', savedTrip.id);
+
+    setIsSaved(true);
+    setShowTitleInput(false);
+    onSaved?.(savedTrip.id);
+
+    setTimeout(() => {
+      setIsSaved(false);
+      setTitle('');
+    }, 3000);
+  } catch (error) {
+    console.error('❌ Save trip error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    alert(`Failed to save trip: ${errorMessage}`);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
     if (isSaved) {
         return (
@@ -131,7 +123,7 @@ export function SaveTripButton({ formData, timeline, onSaved }: SaveTripButtonPr
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Give your trip a name..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-                    onKeyPress={(e) => e.key === 'Enter' && handleSave()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                     autoFocus
                 />
                 <div className="flex space-x-2">

@@ -1,15 +1,5 @@
 <?php
-
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Recommended production settings commented out
-    | Use these for development and adjust for production
-    |
-    */
 
     'paths' => [
         'api/*',
@@ -18,46 +8,29 @@ return [
         'logout',
         'register',
         'forgot-password',
-        'reset-password'
+        'reset-password',
     ],
 
-    'allowed_methods' => [
-        'POST',
-        'GET',
-        'OPTIONS',
-        'PUT',
-        'PATCH',
-        'DELETE'
-    ],
+    'allowed_methods' => ['*'], // allow all methods for simplicity
 
     'allowed_origins' => [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        // 'https://yourproductiondomain.com'
     ],
 
-    'allowed_origins_patterns' => [
-        // For dynamic subdomains if needed
-        // 'https?://(.+\.)?yourdomain\.com'
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => [
-        'Origin',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'X-Requested-With',
-        'X-CSRF-TOKEN',
-        'X-XSRF-TOKEN'
+        '*', // allows all headers
     ],
 
     'exposed_headers' => [
         'Authorization',
         'X-CSRF-TOKEN',
-        'X-XSRF-TOKEN'
+        'X-XSRF-TOKEN',
     ],
 
-    'max_age' => 60 * 60 * 24, // 24 hours
+    'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => true, // this is CRUCIAL for Sanctum cookie auth
 ];
