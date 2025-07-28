@@ -11,7 +11,7 @@ interface ChatAIProps {
 }
 
 const SUGGESTED_QUESTIONS = [
-  'のんびり旅に', 
+  'のんびり旅に',
   '観光少なめに',
   '〇日目だけ温泉体験に',
   '〇日目だけ文化体験に',
@@ -37,11 +37,11 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
       setMessages([
         {
           id: 'welcome',
-          content: 'こんにちは！日本旅行プランについて何でもお聞きください。下記の質問例を参考にしていただくか、自由にご質問ください。',
+          content: 'おはようございます！日本旅行プランについて何でもお聞きください。',
           role: 'assistant',
           timestamp: new Date()
         },
-         {
+        {
           id: 'suggestions',
           content:
             '💡 以下のようなご要望が可能です：\n',
@@ -55,7 +55,7 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
+
   useEffect(() => {
     sessionStorage.setItem('chatAI-messages', JSON.stringify(messages));
   }, [messages]);
@@ -84,7 +84,6 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-    
     try {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -94,38 +93,45 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
 
       const aiResponse: ChatAIResponse = await response.json();
 
-      setMessages(prev => [
-        ...prev,
-        {
-          id: generateId(),
-          content: aiResponse.reply,
-          role: 'assistant',
-          timestamp: new Date(),
-          reused: aiResponse.reused ?? false
-        }
-      ]);
+      const newMessages: ChatMessage[] = [];
 
+      // 1. Phản hồi chính của AI
+      newMessages.push({
+        id: generateId(),
+        content: aiResponse.reply,
+        role: 'assistant',
+        timestamp: new Date(),
+        reused: aiResponse.reused ?? false
+      });
+
+      // 2. Nếu có plan => thêm xác nhận
       if (aiResponse.plan) {
-                // If the plan has a 'timeline' property, it means ruleBasedResponse already handled the AI call and parsing
-              if (aiResponse.plan.timeline) {
-                  setPendingPlan(aiResponse.plan); // Set the full plan, which contains the timeline
-                  // The "このプランで決定" message will be added below
-              } else {
-                  // For plans that modify general settings (pace, activitiesPerDay)
-                  setPendingPlan(aiResponse.plan);
-              }
-                // Add the "Confirm plan" message after setting pendingPlan
-               setMessages(prev => [
-                  ...prev,
-                  {
-                      id: generateId(),
-                      content: 'このプランに変更しますか？\n\n「このプランで決定」をクリックして適用してください。',
-                      role: 'assistant',
-                      timestamp: new Date()
-                  }
-                ]);
-            }
-      
+        if (aiResponse.plan.timeline) {
+          setPendingPlan(aiResponse.plan);
+        } else {
+          setPendingPlan(aiResponse.plan);
+        }
+
+        newMessages.push({
+          id: generateId(),
+          content: 'このプランに変更しますか？\n\n「このプランで決定」をクリックして適用してください。',
+          role: 'assistant',
+          timestamp: new Date()
+        });
+      }
+
+      // 3. Nếu có suggestion => thêm suggestion message
+      if (aiResponse.suggestions?.length) {
+        newMessages.push({
+          id: `suggestions-${Date.now()}`,
+          content: '💡 以下のようなご要望が可能です：\n', // không cần nội dung
+          role: 'assistant',
+          timestamp: new Date()
+        });
+      }
+
+      // 4. Cập nhật toàn bộ messages cùng lúc
+      setMessages(prev => [...prev, ...newMessages]);
     } catch {
       setMessages(prev => [
         ...prev,
@@ -140,7 +146,7 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[90vw] h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
       <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between">
@@ -164,22 +170,96 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
                 {msg.role === 'user' && <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center"><User className="w-3 h-3" /></div>}
                 <div>
                   <span className="text-sm whitespace-pre-line">{msg.content}</span>
+                  {msg.content?.includes('このプランで決定') && (
+                    <>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          if (onPlanUpdate && pendingPlan) {
+                            const snapshot = currentPlan ? structuredClone(currentPlan) : null;
+                            onPlanUpdate(pendingPlan);
+                            if (snapshot) {
+                              setPreviousPlan(snapshot);
+                            }
+
+                            const applyMessages: ChatMessage[] = [
+                              {
+                                id: generateId(),
+                                content: 'プランが適用されました！',
+                                role: 'assistant',
+                                timestamp: new Date()
+                              },
+                              {
+                                id: `suggestions-${Date.now()}`,
+                                content: '元のプランに戻す or \n💡 以下のようなご要望が可能です：\n',
+                                role: 'assistant',
+                                timestamp: new Date()
+                              },
+
+                            ];
+
+                            setMessages(prev => [...prev, ...applyMessages]);
+                            setPendingPlan(null);
+                          }
+                        }}
+
+                        className="mt-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-xl text-sm"
+                      >
+                        このプランで決定
+                      </motion.button>
+                    </>
+                  )}
                   {/* ✅ Nếu là message id 'suggestions', render các nút */}
-                  {msg.id === 'suggestions' && (
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {SUGGESTED_QUESTIONS.map((s, idx) => (
+                  {msg.id.startsWith('suggestions') && (
+                    <div className="mt-3 space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        {SUGGESTED_QUESTIONS.map((s, idx) => (
+                          <motion.button
+                            key={idx}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setInputMessage(s)}
+                            className="text-[11px] px-2 py-1 rounded-md bg-gray-100 border border-gray-300 hover:bg-gray-200 whitespace-nowrap"
+                          >
+                            {s}
+                          </motion.button>
+                        ))}
+                      </div>
+
+                      {previousPlan && (
                         <motion.button
-                          key={idx}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setInputMessage(s)}
-                          className="text-[11px] px-2 py-1 rounded-md bg-gray-100 border border-gray-300 hover:bg-gray-200 whitespace-nowrap"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            if (onPlanUpdate && previousPlan) {
+                              onPlanUpdate(previousPlan);
+                              const rollbackMessages: ChatMessage[] = [
+                                {
+                                  id: generateId(),
+                                  content: '元のプランに戻しました。',
+                                  role: 'assistant',
+                                  timestamp: new Date()
+                                },
+                                {
+                                  id: `suggestions-${Date.now()}`,
+                                  content: '💡 以下のようなご要望が可能です：\n',
+                                  role: 'assistant',
+                                  timestamp: new Date()
+                                }
+                              ];
+                              setMessages(prev => [...prev, ...rollbackMessages]);
+                              setPreviousPlan(null);
+                            }
+                          }}
+                          className="mt-2 bg-red-700 text-white px-4 py-2 rounded-xl text-sm"
                         >
-                          {s}
+                          元のプランに戻す
                         </motion.button>
-                      ))}
+                      )}
                     </div>
                   )}
+
                 </div>
               </div>
             </div>
@@ -191,7 +271,7 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
       </div>
 
       <div className="px-6 pb-3">
-        
+
         <div className="flex gap-3">
           <input
             type="text"
@@ -213,6 +293,6 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
         </div>
       </div>
     </div>
-    
+
   );
 }
