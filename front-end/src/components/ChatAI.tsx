@@ -26,51 +26,89 @@ function generateId() {
 }
 
 export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [pendingPlan, setPendingPlan] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [previousPlan, setPreviousPlan] = useState<any>(null);
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: 'welcome',
-          content: 'おはようございます！日本旅行プランについて何でもお聞きください。',
-          role: 'assistant',
-          timestamp: new Date()
-        },
-        {
-          id: 'suggestions',
-          content:
-            '💡 以下のようなご要望が可能です：\n',
-          role: 'assistant',
-          timestamp: new Date()
-        }
-      ]);
-    }
-  }, []);
+  // session appliedPlan
+  const [appliedPlan, setAppliedPlan] = useState<any>(null);
 
+  useEffect(() => {
+    const saved = sessionStorage.getItem('chatAI-appliedPlan');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.days || parsed?.timeline) {
+          setAppliedPlan(parsed);
+        }
+      } catch (e) {
+        sessionStorage.removeItem('chatAI-appliedPlan');
+      }
+    } else if (currentPlan) {
+      setAppliedPlan(currentPlan); // fallback ban đầu
+    }
+  }, [currentPlan]);
+  useEffect(() => {
+    if (appliedPlan) {
+      sessionStorage.setItem('chatAI-appliedPlan', JSON.stringify(appliedPlan));
+    }
+  }, [appliedPlan]);
+  //session messages
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('chatAI-messages');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date()
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to restore chat messages:", e);
+    }
+
+    return [
+      {
+        id: 'welcome',
+        content: 'おはようございます！日本旅行プランについて何でもお聞きください。',
+        role: 'assistant',
+        timestamp: new Date()
+      },
+      {
+        id: 'suggestions',
+        content: '💡 以下のようなご要望が可能です：\n',
+        role: 'assistant',
+        timestamp: new Date()
+      }
+    ];
+  });
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
   useEffect(() => {
     sessionStorage.setItem('chatAI-messages', JSON.stringify(messages));
   }, [messages]);
-  useEffect(() => {
-    sessionStorage.setItem('chatAI-input', inputMessage);
-  }, [inputMessage]);
-
+  //session pendingPlan
+  const [pendingPlan, setPendingPlan] = useState<any>(() => {
+    const saved = sessionStorage.getItem('chatAI-pendingPlan');
+    return saved ? JSON.parse(saved) : null;
+  });
   useEffect(() => {
     if (pendingPlan) sessionStorage.setItem('chatAI-pendingPlan', JSON.stringify(pendingPlan));
   }, [pendingPlan]);
-
+  //session previousPlan
+  const [previousPlan, setPreviousPlan] = useState<any>(() => {
+    const saved = sessionStorage.getItem('chatAI-previousPlan');
+    return saved ? JSON.parse(saved) : null;
+  });
   useEffect(() => {
-    if (previousPlan) sessionStorage.setItem('chatAI-previousPlan', JSON.stringify(previousPlan));
+    if (previousPlan) {
+      sessionStorage.setItem('chatAI-previousPlan', JSON.stringify(previousPlan));
+    } else {
+      sessionStorage.removeItem('chatAI-previousPlan');
+    }
   }, [previousPlan]);
-
+  //---
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
@@ -85,10 +123,15 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
     setInputMessage('');
     setIsLoading(true);
     try {
+      const contextPayload = appliedPlan?.days || appliedPlan?.timeline
+        ? { currentPlan: appliedPlan }
+        : {};
+
+
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, context: { currentPlan } })
+        body: JSON.stringify({ message, context: contextPayload })
       });
 
       const aiResponse: ChatAIResponse = await response.json();
@@ -179,6 +222,7 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
                           if (onPlanUpdate && pendingPlan) {
                             const snapshot = currentPlan ? structuredClone(currentPlan) : null;
                             onPlanUpdate(pendingPlan);
+                            setAppliedPlan(pendingPlan);
                             if (snapshot) {
                               setPreviousPlan(snapshot);
                             }
@@ -234,6 +278,7 @@ export default function ChatAI({ currentPlan, onPlanUpdate }: ChatAIProps) {
                           onClick={() => {
                             if (onPlanUpdate && previousPlan) {
                               onPlanUpdate(previousPlan);
+                              setAppliedPlan(previousPlan);
                               const rollbackMessages: ChatMessage[] = [
                                 {
                                   id: generateId(),

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     //rules
     let activityCountRule = '';
     let paceRule = '';
-    let budgetRule = ''; 
+    let budgetRule = '';
     let foodFocusRule = '';
     if (overrideRequest) {
       if (overrideRequest.includes('観光を減らし') || overrideRequest.includes('ゆったり滞在')) {
