@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\AIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,4 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/admin/statistics', [StatisticsController::class, 'index']);
+
 Route::post('/ai/save-itinerary', [AIController::class, 'saveItinerary']);
+
+Route::post('/ai/chat/log', [AIChatController::class, 'store']);
+Route::get('/ai/chat/log/{user_id}', [AIChatController::class, 'recent']);

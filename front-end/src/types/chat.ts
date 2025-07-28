@@ -3,12 +3,14 @@ export interface ChatMessage {
     content: string;
     role: 'user' | 'assistant';
     timestamp: Date;
+    reused?: boolean;
 }
 
 export interface ChatAIResponse {
     reply: string;
     plan?: any;
     suggestions?: string[];
+    reused?: boolean;
 }
 
 export interface ChatRequest {

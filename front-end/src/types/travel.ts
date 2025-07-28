@@ -2,7 +2,7 @@ export interface JapanTravelFormData {
     regions: RegionWithDays[]; // Multiple regions with day allocation
     totalDuration: number; // Total days (max 7)
     travelStyles: JapanTravelStyle[]; // Multiple travel styles
-    season?: JapanSeason;
+    season?: JapanSeason | null ;
     interests: JapanInterest[];
 }
 
@@ -118,7 +118,7 @@ export interface JapanTimeline {
     totalDuration: number;
     regions: RegionWithDays[];
     travelStyles: JapanTravelStyle[];
-    season?: JapanSeason;
+    season?: JapanSeason | null;
 }
 
 // Database and Authentication Types
@@ -158,7 +158,7 @@ export interface SavedTrip {
     total_estimated_cost?: number;
     regions: RegionWithDays[];
     travel_styles: JapanTravelStyle[];
-    season?: string;
+    season?: string | null;
     
     // Sharing and collaboration
     is_public: boolean;

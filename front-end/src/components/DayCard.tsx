@@ -135,7 +135,9 @@ export default function DayCard({ day, dayIndex, onMoveActivity, onUpdateActivit
         }
         
         // Get all unique activity times from the day
-        const activityTimes = day.activities.map(activity => activity.startTime);
+        const activityTimes = day.activities
+            .map(activity => activity.startTime)
+            .filter((time): time is string => typeof time === 'string' && time.includes(':'));
         
         // Combine fixed slots with activity times and remove duplicates
         const allTimes = [...new Set([...fixedSlots, ...activityTimes])];
@@ -149,7 +151,12 @@ export default function DayCard({ day, dayIndex, onMoveActivity, onUpdateActivit
     };
 
     const timeSlots = generateTimeSlots();
-    
+    day.activities.forEach((activity) => {
+        if (!activity.startTime || !activity.startTime.includes(':')) {
+            console.warn(`🚨 [Activity Warning] Invalid startTime in Day ${day.dayNumber}:`, activity);
+        }
+        });
+
     console.log('🕐 DayCard Debug - Day', day.dayNumber, ':', {
         totalActivities: day.activities.length,
         activityTimes: day.activities.map(a => `${a.startTime}: ${a.name}`),

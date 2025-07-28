@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { JapanTimeline, TimelineActivity } from '@/types/travel';
 import DayCard from './DayCard';
 import ActivityDetailModal from './ActivityDetailModal';
-
+import { useEffect } from 'react';
 interface TimelineViewProps {
     timeline: JapanTimeline;
     onTimelineUpdate?: (updatedTimeline: JapanTimeline) => void;
@@ -17,7 +17,10 @@ export default function TimelineView({ timeline, onTimelineUpdate }: TimelineVie
     const [currentTimeline, setCurrentTimeline] = useState<JapanTimeline>(timeline);
     const [selectedActivity, setSelectedActivity] = useState<TimelineActivity | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    useEffect(() => {
+        //console.log("🧭 TimelineView received new timeline:", timeline);
+        setCurrentTimeline(timeline);
+    }, [timeline]);
     const moveActivity = useCallback((
         activityId: string,
         fromDayIndex: number,

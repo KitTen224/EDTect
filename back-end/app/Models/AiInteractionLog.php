@@ -14,6 +14,9 @@ class AiInteractionLog extends Model
         'place_id',
         'itinerary_id',
         'action_type',
+        'prompt_text',
+        'response_text',
+        'model_used',
         'timestamp',
         'metadata',
     ];

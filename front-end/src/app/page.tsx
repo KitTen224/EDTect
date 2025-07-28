@@ -7,8 +7,8 @@ import { SaveTripButton } from '@/components/ui/SaveTripButton';
 import { AuthDebug } from '@/components/AuthDebug';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ChatAI from '@/components/ChatAI';
-import SimpleChat from '@/components/SimpleChat';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
+import { applyPacingToTimeline } from '@/utils/timelineUtils';
 
 export default function Home() {
     const { t } = useLanguage();
@@ -20,14 +20,6 @@ export default function Home() {
     const [showRawOutput, setShowRawOutput] = useState(false);
     const [lastPrompt, setLastPrompt] = useState<string | null>(null);
     const [showChat, setShowChat] = useState(false);
-    const handlePlanUpdateFromAI = (newPlan: any) => {
-        // Update timeline with new plan from AI
-        if (newPlan && newPlan.timeline) {
-            setTimeline(newPlan.timeline);
-        }
-        // You can also update other related states here
-        console.log('🤖 Plan updated from AI:', newPlan);
-    };
 
     const handleJapanTravelFormSubmit = async (data: JapanTravelFormData) => {
         console.log('🇯🇵 Japan journey submitted:', data);
@@ -143,6 +135,55 @@ export default function Home() {
         }
     };
 
+    const handlePlanUpdate = (newPlan: any) => {
+        let updatedTimeline: JapanTimeline | null = null;
+
+        // 1. Nếu newPlan có timeline → dùng trực tiếp
+        if (newPlan.timeline) {
+            updatedTimeline = newPlan.timeline;
+        }
+
+        // 2. Nếu không có timeline nhưng có pacing → apply dựa vào timeline cũ
+        else if (newPlan.activitiesPerDay && timeline) {
+            updatedTimeline = applyPacingToTimeline(timeline, {
+            activitiesPerDay: newPlan.activitiesPerDay,
+            restTime: newPlan.restTime,
+            pace: newPlan.pace
+            });
+            console.log("🧩 Applied pacing to existing timeline:", updatedTimeline);
+        }else if (newPlan.days) {
+            updatedTimeline = newPlan; // ← Đây chính là trường hợp undo
+            }
+
+        // 3. Nếu có timeline được tạo mới → cập nhật
+        if (updatedTimeline) {
+            setTimeline(updatedTimeline);
+        }
+
+        // 4. Cập nhật các thông tin khác của trip nếu có
+        if (newPlan.regions || newPlan.travelStyles || newPlan.totalDuration || newPlan.season) {
+            setTripData(prev => {
+            const safePrev: JapanTravelFormData = {
+                regions: [],
+                travelStyles: [],
+                totalDuration: 1,
+                interests: [],
+                ...(prev || {})
+            };
+
+            return {
+                ...safePrev,
+                regions: newPlan.regions ?? safePrev.regions,
+                travelStyles: newPlan.travelStyles ?? safePrev.travelStyles,
+                totalDuration: newPlan.totalDuration ?? safePrev.totalDuration,
+                season: newPlan.season ?? safePrev.season
+            };
+            });
+        }
+
+        console.log("📦 New Plan applied from AI:", newPlan);
+        };
+
     if (!tripData) {
         return (
             <div>Add commentMore actions
@@ -154,45 +195,35 @@ export default function Home() {
                 {/* Chat AI Button for Form Page */}
                 <div
                     style={{
-                        position: 'fixed',
-                        bottom: '30px',
-                        right: '30px',
-                        zIndex: 999999,
-                        backgroundColor: '#dc2626',
-                        color: 'white',
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '40px',
-                        cursor: 'pointer',
-                        border: '4px solid white',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.5)',
-                        transition: 'all 0.3s ease'
-                    }}                    onClick={() => {
-                        setShowChat(true);
-                        console.log('🤖 Chat AI button clicked on form page!');
+                    position: 'fixed',
+                    bottom: '30px',
+                    right: '30px',
+                    zIndex: 1000,
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '30px',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
                     }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                        e.currentTarget.style.backgroundColor = '#b91c1c';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.backgroundColor = '#dc2626';
-                    }}
-                    title="AIチャットを開く"                >
+                    onClick={() => setShowChat(!showChat)}
+                    title="AIチャットを開く"
+                >
                     💬
                 </div>
+
                 
                 {/* Chat Interface for Form Page */}
                 {showChat && (
-                    <SimpleChat 
-                        currentPlan={null}
-                        onClose={() => setShowChat(false)}
-                    />
+                    <ChatAI
+                        currentPlan={timeline}
+                        onPlanUpdate={handlePlanUpdate}
+                        />
                 )}
             </div>
         );
@@ -448,38 +479,37 @@ export default function Home() {
             </div>
             <AuthDebug />
             <div
-                style={{
+                    style={{
                     position: 'fixed',
                     bottom: '30px',
                     right: '30px',
-                    zIndex: 999999,
+                    zIndex: 1000,
                     backgroundColor: '#dc2626',
                     color: 'white',
-                    width: '80px',
-                    height: '80px',
+                    width: '60px',
+                    height: '60px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '40px',
+                    fontSize: '30px',
                     cursor: 'pointer',
-                    border: '4px solid white',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.5)'
-                }}                onClick={() => {
-                    setShowChat(true);
-                    console.log('🤖 Chat AI button clicked!');
-                }}
-                title="AIチャットを開く"            >
-                💬
-            </div>
-            
-            {/* Chat Interface */}
-            {showChat && (
-                <SimpleChat 
-                    currentPlan={timeline}
-                    onClose={() => setShowChat(false)}
-                />
-            )}
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
+                    }}
+                    onClick={() => setShowChat(!showChat)}
+                    title="AIチャットを開く"
+                >
+                    💬
+                </div>
+
+                
+                {/* Chat Interface for Form Page */}
+                {showChat && (
+                    <ChatAI
+                        currentPlan={timeline}
+                        onPlanUpdate={handlePlanUpdate}
+                        />
+                )}
         
         </div>
         
