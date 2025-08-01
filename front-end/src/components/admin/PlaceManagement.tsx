@@ -39,9 +39,10 @@ export default function PlaceManagement() {
 
     const fetchPlaces = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/places', {
+            const response = await fetch('http://localhost:8000/api/admin/places', {
                 headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Accept': 'application/json',
+                    //'Authorization': `Bearer ${getAuthToken()}`,
                 },
             });
             if (response.ok) {
@@ -80,9 +81,10 @@ export default function PlaceManagement() {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/categories', {
+            const response = await fetch('http://localhost:8000/api/categories', {
                 headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Accept': 'application/json',
+                    //'Authorization': `Bearer ${getAuthToken()}`,
                 },
             });
             if (response.ok) {
@@ -116,8 +118,8 @@ export default function PlaceManagement() {
 
         try {
             const url = editingPlace
-                ? `http://127.0.0.1:8000/api/places/${editingPlace.id}`
-                : 'http://127.0.0.1:8000/api/places';
+                ? `http://localhost:8000/api/admin/places/${editingPlace.id}`
+                : 'http://localhost:8000/api/admin/places';
 
             const method = editingPlace ? 'PUT' : 'POST';
 
@@ -165,7 +167,7 @@ export default function PlaceManagement() {
     const handleDelete = async (id: number) => {
         if (confirm('この観光地を削除しますか？')) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/places/${id}`, {
+                const response = await fetch(`http://localhost:8000/api/admin/places/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${getAuthToken()}`,

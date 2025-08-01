@@ -35,9 +35,10 @@ export default function HotelManagement() {
 
     const fetchHotels = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/hotels', {
+            const response = await fetch('http://localhost:8000/api/admin/hotels', {
                 headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Accept': 'application/json',
+                    //'Authorization': `Bearer ${getAuthToken()}`,
                 },
             });
             if (response.ok) {
@@ -63,8 +64,8 @@ export default function HotelManagement() {
 
         try {
             const url = editingHotel
-                ? `http://127.0.0.1:8000/api/hotels/${editingHotel.id}`
-                : 'http://127.0.0.1:8000/api/hotels';
+                ? `http://localhost:8000/api/admin/hotels/${editingHotel.id}`
+                : 'http://localhost:8000/api/admin/hotels';
 
             const method = editingHotel ? 'PUT' : 'POST';
 
@@ -111,7 +112,7 @@ export default function HotelManagement() {
     const handleDelete = async (id: number) => {
         if (confirm('この宿泊施設を削除しますか？')) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/hotels/${id}`, {
+                const response = await fetch(`http://localhost:8000/api/admin/hotels/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${getAuthToken()}`,

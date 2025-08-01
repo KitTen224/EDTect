@@ -35,9 +35,10 @@ export default function RestaurantManagement() {
 
     const fetchRestaurants = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/restaurants', {
+            const response = await fetch('http://localhost:8000/api/admin/restaurants', {
                 headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Accept': 'application/json',
+                    //'Authorization': `Bearer ${getAuthToken()}`,
                 },
             });
             if (response.ok) {
@@ -63,8 +64,8 @@ export default function RestaurantManagement() {
 
         try {
             const url = editingRestaurant
-                ? `http://127.0.0.1:8000/api/restaurants/${editingRestaurant.id}`
-                : 'http://127.0.0.1:8000/api/restaurants';
+                ? `http://localhost:8000/api/admin/restaurants/${editingRestaurant.id}`
+                : 'http://localhost:8000/api/admin/restaurants';
 
             const method = editingRestaurant ? 'PUT' : 'POST';
 
@@ -111,7 +112,7 @@ export default function RestaurantManagement() {
     const handleDelete = async (id: number) => {
         if (confirm('このレストランを削除しますか？')) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/restaurants/${id}`, {
+                const response = await fetch(`http://localhost:8000/api/admin/restaurants/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${getAuthToken()}`,
